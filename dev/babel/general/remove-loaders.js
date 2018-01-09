@@ -1,5 +1,5 @@
 import {findElemsClass} from "./find";
-import {pageLoad} from "./pageLoad";
+import {pageLoad} from "./page-load";
 
 export let removeLoaders = function(loadersClass) {
 

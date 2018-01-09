@@ -28,8 +28,8 @@
 // End Description
 
 import {findElemsClass} from "./find";
-import {hideClass} from "./stateClasses";
-import {windowScroll, getWindowScroll} from "./windowScroll";
+import {hideClass} from "./state-classes";
+import {windowScroll, getWindowScroll} from "./window-scroll";
 
 export let ToTop = function(params) {
 

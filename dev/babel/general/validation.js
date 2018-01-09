@@ -165,10 +165,10 @@
 // End Description
 
 import {findFirstClass, findElemsClass} from "./find";
-import {applyClasses} from "./applyClasses";
-import {applyStyle} from "./applyStyle";
-import {successClass, errorClass} from "./stateClasses";
-import {findCurrentParent} from "./findCurrentParent";
+import {applyClasses} from "./apply-classes";
+import {applyStyle} from "./apply-style";
+import {successClass, errorClass} from "./state-classes";
+import {findCurrentParent} from "./find-current-parent";
 
 export let Validation = function(params) {
 

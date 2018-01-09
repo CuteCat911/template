@@ -1,7 +1,7 @@
 import {findElemsClass, findFirstTag} from "./find";
-import {windowResize} from "./windowResize";
-import {pageLoad} from "./pageLoad";
-import {inspectMobile} from "./inspectMobile";
+import {windowResize} from "./window-resize";
+import {pageLoad} from "./page-load";
+import {inspectMobile} from "./inspect-mobile";
 
 export let hoverSvg = function(params) {
 

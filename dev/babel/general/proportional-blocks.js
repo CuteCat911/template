@@ -29,8 +29,8 @@
 // End Description
 
 import {findElemsClass} from "./find";
-import {getAssociativeArrayLength} from "./getAssociativeArrayLength";
-import {windowResize} from "./windowResize";
+import {getAssociativeArrayLength} from "./get-associative-array-length";
+import {windowResize} from "./window-resize";
 
 export let ProportionalBlocks = function(params) {
 

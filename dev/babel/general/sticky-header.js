@@ -41,9 +41,9 @@
 // End Description
 
 import {findFirstClass} from "./find";
-import {applyStyle} from "./applyStyle";
-import {windowScroll, getWindowScroll} from "./windowScroll";
-import {windowResize} from "./windowResize";
+import {applyStyle} from "./apply-style";
+import {windowScroll, getWindowScroll} from "./window-scroll";
+import {windowResize} from "./window-resize";
 
 export let StickyHeader = function(params) {
 

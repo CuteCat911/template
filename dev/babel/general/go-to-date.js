@@ -50,7 +50,7 @@
 // End Description
 
 import {findFirstClass, findElemsClass} from "./find";
-import {getAssociativeArrayLength} from "./getAssociativeArrayLength";
+import {getAssociativeArrayLength} from "./get-associative-array-length";
 
 export let GoToDate = function(params) {
 

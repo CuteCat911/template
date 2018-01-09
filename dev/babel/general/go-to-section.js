@@ -48,8 +48,8 @@
 // End Description
 
 import {findElemsClass, findFirstClass} from "./find";
-import {findCurrentParent} from "./findCurrentParent";
-import {getWindowScroll, scrollTo} from "./windowScroll";
+import {findCurrentParent} from "./find-current-parent";
+import {getWindowScroll, scrollTo} from "./window-scroll";
 
 export let GoToSection = function(params) {
 

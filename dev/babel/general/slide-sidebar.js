@@ -35,9 +35,9 @@
 // End Description
 
 import {findFirstClass, findElemsClass} from "./find";
-import {getWindowScroll, windowScroll} from "./windowScroll";
-import {applyStyle} from "./applyStyle";
-import {windowResize} from "./windowResize";
+import {getWindowScroll, windowScroll} from "./window-scroll";
+import {applyStyle} from "./apply-style";
+import {windowResize} from "./window-resize";
 
 export let SlideSidebar = function(params) {
 

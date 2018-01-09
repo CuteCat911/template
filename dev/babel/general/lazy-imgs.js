@@ -51,8 +51,8 @@
 // End Description
 
 import {findElemsClass} from "./find";
-import {windowScroll, getScrollHeight} from "./windowScroll";
-import {applyClasses} from "./applyClasses";
+import {windowScroll, getScrollHeight} from "./window-scroll";
+import {applyClasses} from "./apply-classes";
 import {getXmlHttp} from "./ajax";
 import {createLoader} from "./loader";
 

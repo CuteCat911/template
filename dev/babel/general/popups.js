@@ -67,9 +67,9 @@
 // End Description
 
 import {findElemsClass, findElemsClasses, findFirstTag} from "./find";
-import {windowResize} from "./windowResize";
-import {applyStyle} from "./applyStyle";
-import {findCurrentParent} from "./findCurrentParent";
+import {windowResize} from "./window-resize";
+import {applyStyle} from "./apply-style";
+import {findCurrentParent} from "./find-current-parent";
 
 export let Popups = function(params) {
 

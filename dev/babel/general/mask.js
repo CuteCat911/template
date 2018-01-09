@@ -1,5 +1,5 @@
 import {findElemsClass} from "./find";
-import {getAssociativeArrayLength} from "../modules/getAssociativeArrayLength";
+import {getAssociativeArrayLength} from "../modules/get-associative-array-length";
 
 export let Mask = function(params) {
 

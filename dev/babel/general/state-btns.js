@@ -1,5 +1,5 @@
 import {findElemsClass} from "./find";
-import {onClass, offClass} from "./stateClasses";
+import {onClass, offClass} from "./state-classes";
 
 export let stateBtns = function(elemsClass) {
 

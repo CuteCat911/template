@@ -1,7 +1,7 @@
 import {findElemsClass, findFirstClass} from "./find";
-import {applyClasses} from "./applyClasses";
-import {pageLoad} from "./pageLoad";
-import {lockClass, hideClass} from "./stateClasses";
+import {applyClasses} from "./apply-classes";
+import {pageLoad} from "./page-load";
+import {lockClass, hideClass} from "./state-classes";
 
 // Description
 // * * * = * * *

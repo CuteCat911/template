@@ -1,11 +1,11 @@
 // DragAndDrop V - 1.0.0
 
 import {findFirstClass, findElemsClass} from "./find";
-import {inspectMobile} from "./inspectMobile";
-import {windowResize} from "./windowResize";
-import {findCurrentParent} from "./findCurrentParent";
-import {applyStyle} from "./applyStyle";
-import {applyClasses} from "./applyClasses";
+import {inspectMobile} from "./inspect-mobile";
+import {windowResize} from "./window-resize";
+import {findCurrentParent} from "./find-current-parent";
+import {applyStyle} from "./apply-style";
+import {applyClasses} from "./apply-classes";
 
 export let DragAndDrop = function(params) {
 

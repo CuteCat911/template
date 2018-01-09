@@ -23,8 +23,8 @@
 // End Description
 
 import {findFirstClass} from "./find";
-import {WindowResize} from "./windowResize";
-import {WindowScroll, getWindowScroll} from "./windowScroll";
+import {WindowResize} from "./window-resize";
+import {WindowScroll, getWindowScroll} from "./window-scroll";
 
 export let ProgressBar = function(params) {
 
