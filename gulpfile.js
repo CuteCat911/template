@@ -52,7 +52,7 @@ const webpackOptions = {
     ]
   },
   plugins: [
-    new webpack.NoErrorsPlugin(),
+    new webpack.NoEmitOnErrorsPlugin(),
     new webpack.DefinePlugin({
       NODE_ENV: JSON.stringify(NODE_ENV)
     }),
@@ -168,7 +168,7 @@ const tasks = {
         }
       };
       let func = gulp.src("dev/babel/*.js");
-      func.on("error", conf.defaultnotify.onError());
+      func.on("error", conf.default.notify.onError());
       func.pipe(conf.js.named());
       func.pipe(conf.js.webpackStream(webpackOptions));
       func.pipe(gulp.dest("js/"));
