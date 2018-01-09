@@ -1,0 +1,36 @@
+*
+  margin 0
+  padding 0
+
+html
+  min-width 320px
+  height 100%
+  font-family default-font
+  fz-responsive(fz-min, fz-mid, fz-max, fz-min-point, fz-mid-point, fz-max-point, true)
+  color black
+
+body
+  height 100%
+
+  &.is-lock
+    overflow hidden
+
+footer
+  flex 0 0 auto
+
+.page-wrapper
+  position relative
+  display flex
+  flex-direction column
+  height 100%
+
+  & .page-loader
+    background-color light-gray
+
+.page-content
+  flex 1 0 auto
+  overflow hidden
+
+.content-wrapper
+  height 0
+  overflow hidden

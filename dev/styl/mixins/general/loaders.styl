@@ -1,0 +1,21 @@
+loader-1(color = black, size = 65px, time = 0.6s)
+  margin-top (remSize(size) * -0.5)
+  margin-left (remSize(size) * -0.5)
+  position absolute
+  top 45%
+  left 50%
+  width remSize(size)
+  height @width
+  border-radius 50%
+  border (@width / 12) solid alpha(color, 0.3)
+  border-left-color alpha(color, 0.8)
+  box-sizing border-box
+  transform-origin 50%
+  animation rotation time infinite linear
+  
+@keyframes rotation 
+  form
+    transform rotate(0)
+
+  to
+    transform rotate(359deg)

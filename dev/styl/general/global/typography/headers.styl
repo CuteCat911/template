@@ -1,0 +1,61 @@
+h1,
+h2,
+h3,
+h4,
+h5,
+h6
+  margin 0
+  font-family header-font
+  font-weight 700
+
+$h1
+  font-size remSize(28px)
+
+$h2
+  font-size remSize(24px)
+
+$h3
+  font-size remSize(20px)
+
+$h4
+  font-size remSize(16px)
+
+$h5
+  font-size remSize(14px)
+  
+$h6
+  font-size remSize(12px)
+
+h1,
+.like-h1
+  @extend $h1
+
+h2,
+.like-h2
+  @extend $h2
+
+h3,
+.like-h3
+  @extend $h3
+
+h4,
+.like-h4
+  @extend $h4
+
+h5,
+.like-h5
+  @extend $h5
+
+h6,
+.like-h6
+  @extend $h6
+
+.like-h1,
+.like-h2,
+.like-h3,
+.like-h4,
+.like-h5,
+.like-h6
+
+  &--center
+    text-align center

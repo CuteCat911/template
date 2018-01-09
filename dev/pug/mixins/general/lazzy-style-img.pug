@@ -1,0 +1,4 @@
+mixin lazzyStyleImg(img, elemClass, jsClass)
+  div(class = elemClass, class = jsClass, data-style-img = img)
+  noscript
+    div(class = elemClass, style="background-image: " + img + ";")

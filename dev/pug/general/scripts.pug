@@ -1,0 +1,33 @@
+mixin scripts(name, browsUpd, svg)
+  script(src="/js/common.js")
+  if (name)
+    script(src="/js/" + name + ".js")
+  if (browsUpd == true)
+    script.
+      var $buoop = {
+        notify: {
+          i: -5,
+          f: -4,
+          o: -4,
+          s: -2,
+          c: -4
+        },
+        unsecure:true,
+        api: 5
+      };
+
+      var $buo_f = function() {
+        var e = document.createElement("script");
+        e.src = "//browser-update.org/update.min.js";
+        document.body.appendChild(e);
+      };
+
+      try {
+        document.addEventListener("DOMContentLoaded", $buo_f, false);
+      } catch (e) {
+        window.attachEvent("onload", $buo_f);
+      };
+  if (svg == true)
+    script(src="/js/libs/svgPolyfill.js")
+    script.
+      svg4everybody();

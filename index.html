@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta property="og:title" content="">
+    <meta property="og:description" content="">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="">
+    <meta property="og:locale" content="ru_RU">
+    <meta property="og:image" content="">
+    <meta name="twitter:site" content="">
+    <meta name="twitter:title" content="">
+    <meta name="twitter:description" content="">
+    <meta name="twitter:image:src" content="">
+    <meta name="theme-color" content="#fff">
+    <meta name="csrf-token" content="qwerty1234">
+    <link rel="icon" type="img/png" href="/favicons/favicon-16x16.png" sizes="16x16">
+    <link rel="icon" type="img/png" href="/favicons/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="img/png" href="/favicons/favicon-96x96.png" sizes="96x96">
+    <link rel="icon" type="img/png" href="/favicons/favicon-128x128.png" sizes="128x128">
+    <link rel="icon" type="img/png" href="/favicons/favicon-160x160.png" sizes="160x160">
+    <link rel="icon" type="img/png" href="/favicons/favicon-196x196.png" sizes="196x196">
+    <link rel="icon" type="img/png" href="/favicons/favicon-228x228.png" sizes="228x228">
+    <link rel="apple-touch-icon" href="/favicons/apple-touch-favicon-57x57.png" sizes="57x57">
+    <link rel="apple-touch-icon" href="/favicons/apple-touch-favicon-60x60.png" sizes="60x60">
+    <link rel="apple-touch-icon" href="/favicons/apple-touch-favicon-72x72.png" sizes="72x72">
+    <link rel="apple-touch-icon" href="/favicons/apple-touch-favicon-76x76.png" sizes="76x76">
+    <link rel="apple-touch-icon" href="/favicons/apple-touch-favicon-114x114.png" sizes="114x114">
+    <link rel="apple-touch-icon" href="/favicons/apple-touch-favicon-120x120.png" sizes="120x120">
+    <link rel="apple-touch-icon" href="/favicons/apple-touch-favicon-144x144.png" sizes="144x144">
+    <link rel="apple-touch-icon" href="/favicons/apple-touch-favicon-152x152.png" sizes="152x152">
+    <link rel="stylesheet" type="text/css" href="/css/libs.css">
+    <link rel="stylesheet" type="text/css" href="/css/common.css">
+    <title></title>
+  </head>
+  <body>
+    <div class="page-wrapper">
+      <div class="page-content">
+        <header></header>
+        <main></main>
+      </div>
+      <footer></footer>
+    </div>
+        <script src="/js/common.js"></script>
+        <script>
+          var $buoop = {
+            notify: {
+              i: -5,
+              f: -4,
+              o: -4,
+              s: -2,
+              c: -4
+            },
+            unsecure:true,
+            api: 5
+          };
+          
+          var $buo_f = function() {
+            var e = document.createElement("script");
+            e.src = "//browser-update.org/update.min.js";
+            document.body.appendChild(e);
+          };
+          
+          try {
+            document.addEventListener("DOMContentLoaded", $buo_f, false);
+          } catch (e) {
+            window.attachEvent("onload", $buo_f);
+          };
+        </script>
+        <script src="/js/libs/svgPolyfill.js"></script>
+        <script>svg4everybody();</script>
+  </body>
+</html>

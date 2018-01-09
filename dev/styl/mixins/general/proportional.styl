@@ -1,0 +1,6 @@
+proportional(width, w, h)
+  type = unit(width)
+
+  if type == "px"
+    width remSize(width)
+    min-height remSize((width * h) / w)
