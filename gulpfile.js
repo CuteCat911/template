@@ -4,7 +4,8 @@ const conf = {
   default: {
     gulp: require("gulp"),
     browserSync: require("browser-sync"),
-    notify: require("gulp-notify")
+    notify: require("gulp-notify"),
+    rename: require("gulp-rename")
   },
   css: {
     stylus: require("gulp-stylus"),
@@ -34,7 +35,7 @@ const webpack = conf.js.webpackStream.webpack;
 const gulp = conf.default.gulp;
 const webpackOptions = {
   output: {
-    publicPath: "/js/",
+    publicPath: "/js",
     library: "[name]"
   },
   watch: true,
@@ -52,7 +53,7 @@ const webpackOptions = {
     ]
   },
   plugins: [
-    new webpack.NoEmitOnErrorsPlugin(),
+    new webpack.NoErrorsPlugin(),
     new webpack.DefinePlugin({
       NODE_ENV: JSON.stringify(NODE_ENV)
     }),
@@ -108,33 +109,28 @@ const tasks = {
   },
   css: {
     stylus: function() {
-      let func = gulp.src("dev/styl/common.styl");
-      func.pipe(conf.css.sourceMaps.init());
-      func.pipe(conf.css.stylus({
-        "include css": true
-      }));
-      func.on("error", conf.default.notify.onError());
-      func.pipe(conf.css.sourceMaps.write());
-      func.pipe(conf.css.autoprefixer(["last 15 versions", "> 1%"], {cascade: true}));
-      func.pipe(gulp.dest("css"));
-      funcs.reloadStream(func);
-      return func;
+      return gulp.src("dev/styl/common.styl")
+                .pipe(conf.css.sourceMaps.init())
+                .pipe(conf.css.stylus({"include css": true}))
+                .on("error", conf.default.notify.onError())
+                .pipe(conf.css.sourceMaps.write())
+                .pipe(conf.css.autoprefixer(["last 15 versions", "> 1%"], {cascade: true}))
+                .pipe(gulp.dest("css"))
+                .pipe(conf.default.browserSync.reload({stream: true}));
     },
     cssLibs: function() {
-      let func = gulp.src("dev/libs/css/**/*.css");
-      func.pipe(conf.css.concat("libs.css"));
-      func.pipe(gulp.dest("css"));
-      funcs.reloadStream(func);
-      return func;
+      return gulp.src("dev/libs/css/**/*.css")
+                .pipe(conf.css.concat("libs.css"))
+                .pipe(gulp.dest("css"))
+                .pipe(conf.default.browserSync.reload({stream: true}));
     }
   },
   html: {
     pages: function() {
-      let func = gulp.src("dev/pug/*.pug");
-      func.pipe(conf.html.pug({pretty: true}));
-      func.pipe(gulp.dest(""));
-      funcs.reloadStream(func);
-      return func;
+      return gulp.src("dev/pug/*.pug")
+                .pipe(conf.html.pug({pretty: true}))
+                .pipe(gulp.dest(""))
+                .pipe(conf.default.browserSync.reload({stream: true}));
     }
   },
   js: {
@@ -146,18 +142,17 @@ const tasks = {
           return false;
         }
       };
-      let func = gulp.src("dev/babel/*.js");
-      func.on("error", conf.default.notify.onError());
-      func.pipe(conf.js.named());
-      func.pipe(conf.js.webpackStream(webpackOptions, null, done));
-      func.pipe(gulp.dest("js/"));
-      funcs.reloadStream(func);
-      func.on("data", function() {
-        if (firstBuildReady) {
-          callback();
-        }
-      });
-      return func;
+      return gulp.src("dev/babel/*.js")
+                .on("error", conf.default.notify.onError())
+                .pipe(conf.js.named())
+                .pipe(conf.js.webpackStream(webpackOptions, null, done))
+                .pipe(gulp.dest("js/"))
+                .pipe(conf.default.browserSync.reload({stream: true}))
+                .on("data", function() {
+                  if (firstBuildReady) {
+                    callback();
+                  }
+                });
     },
     scriptsDebug: function(callback) {
       let firstBuildReady = false;
@@ -167,24 +162,22 @@ const tasks = {
           return false;
         }
       };
-      let func = gulp.src("dev/babel/*.js");
-      func.on("error", conf.default.notify.onError());
-      func.pipe(conf.js.named());
-      func.pipe(conf.js.webpackStream(webpackOptions));
-      func.pipe(gulp.dest("js/"));
-      funcs.reloadStream(func);
-      func.on("data", function() {
-        if (firstBuildReady) {
-          callback();
-        }
-      });
-      return func;
+      return gulp.src("dev/babel/*.js")
+                .on("error", conf.default.notify.onError())
+                .pipe(conf.js.named())
+                .pipe(conf.js.webpackStream(webpackOptions))
+                .pipe(gulp.dest("js/"))
+                .pipe(conf.default.browserSync.reload({stream: true}))
+                .on("data", function() {
+                  if (firstBuildReady) {
+                    callback();
+                  }
+                });
     },
     scriptsLibs: function() {
-      let func = gulp.src("dev/libs/js/*.js")
-      func.pipe(gulp.dest("js/libs"));
-      funcs.reloadStream(func);
-      return func;
+      return gulp.src("dev/libs/js/*.js")
+                .pipe(gulp.dest("js/libs"))
+                .pipe(conf.default.browserSync.reload({stream: true}));
     }
   },
   sprites: {
@@ -198,26 +191,25 @@ const tasks = {
           }
         }
       };
-      let func = gulp.src("sprites/svg/*.svg");
-      func.pipe(conf.svg.plumber());
-      func.pipe(conf.svg.cheerio({
-        run: function($) {
-          $("[fill]").removeAttr("fill");
-          $("[stroke]").removeAttr("stroke");
-          $("[style]").removeAttr("style");
-        },
-        parserOptions: {
-          xmlMode: true
-        }
-      }));
-      func.pipe(conf.svg.replace("&gt;", ">"));
-      func.pipe(conf.svg.sprite(options));
-      func.on("error", function(error) {
-        console.log(error);
-      });
-      func.pipe(gulp.dest("sprites"));
-      funcs.reloadStream(func);
-      return func;
+      return gulp.src("sprites/svg/*.svg")
+                .pipe(conf.svg.plumber())
+                .pipe(conf.svg.cheerio({
+                  run: function($) {
+                    $("[fill]").removeAttr("fill");
+                    $("[stroke]").removeAttr("stroke");
+                    $("[style]").removeAttr("style");
+                  },
+                  parserOptions: {
+                    xmlMode: true
+                  }
+                }))
+                .pipe(conf.svg.replace("&gt;", ">"))
+                .pipe(conf.svg.sprite(options))
+                .on("error", function(error) {
+                  console.log(error);
+                })
+                .pipe(gulp.dest("sprites"))
+                .pipe(conf.default.browserSync.reload({stream: true}));
     }
   },
   watch: {
