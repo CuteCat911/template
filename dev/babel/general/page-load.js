@@ -1,50 +1,35 @@
-// PageLoad - ver. 1.1.1
-
-// Description
-// * * * = * * *
-
-// Функция выполнения скриптов после полной загрузки страницы;
-
-// Принимает в себя функцию или массив с функциями которые будут выполнены после полной загрузки страницы.
-
-// * * * = * * *
-// End Description
+// PageLoad - ver. 1.0.0
 
 let eventArray = [];
 
-export let pageLoad = function(func) {
+export let pageLoad = function(funcs) {
 
-	if (func && typeof func === "function") {
+	if (funcs && typeof funcs === "function") {
 
-		eventArray.push(func);
+		eventArray.push(funcs);
 
-	} else if (func && typeof func === "object") {
+	} else if (funcs && typeof funcs === "object") {
 
-		for (let item of func) {
+		for (let func of funcs) {
 
-			if (typeof item === "function") {
+			if (typeof func === "function") {
 
-				eventArray.push(item);
+				eventArray.push(func);
 
-			};
+			}
 
-		};
+		}
 
-	} else {
-
-		console.error();
-		return false;
-
-	};
+	}
 
 };
 let applyFunc = function() {
 
-	for (let item of eventArray) {
+	for (let event of eventArray) {
 
-		item();
+		event();
 
-	};
+	}
 
 };
 
