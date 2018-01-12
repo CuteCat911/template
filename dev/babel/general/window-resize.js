@@ -52,6 +52,6 @@ let applyFunc = function() {
 
 window.addEventListener("resize", function() {
 
-	debounce(applyFunc, 250);
+	debounce(applyFunc, 150);
 
 });
