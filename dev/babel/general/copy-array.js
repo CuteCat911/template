@@ -1,6 +1,8 @@
+// copyArray - ver. 1.0.0
+
 export let copyArray = function(array) {
 
-  if (array && typeof array === "object" && array.length != 0) {
+  if (array && typeof Array.isArray(array) && array.length != 0) {
 
     let newArray = [];
 
