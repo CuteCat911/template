@@ -1,50 +1,35 @@
-// WindowResize - ver. 1.1.0
-
-// Description
-// * * * = * * *
-
-// Функция выполнения скриптов после ресайза страницы;
-
-// Принимает в себя функцию (func) которая будет выполнена после ресайза страницы.
-
-// * * * = * * *
-// End Description
+// windowResize - ver. 1.0.0
 
 import {debounce} from "./debounce";
 
 let eventArray = [];
 
-export let windowResize = function(func) {
+export let windowResize = function(funcs) {
 
-	if (func && typeof func === "function") {
+	if (funcs && typeof funcs === "function") {
 
-		eventArray.push(func);
+		eventArray.push(funcs);
 
-	} else if (func && typeof func === "object") {
+	} else if (funcs && typeof Array.isArray(funcs)) {
 
-		for (let item of func) {
+		for (let func of funcs) {
 
-			if (typeof item === "function") {
+			if (typeof func === "function") {
 
-				eventArray.push(item);
+				eventArray.push(func);
 
 			}
 
 		}
-
-	} else {
-
-		console.error();
-		return false;
 
 	}
 
 };
 let applyFunc = function() {
 
-	for (let item of eventArray) {
+	for (let event of eventArray) {
 
-		item();
+		event();
 
 	}
 
