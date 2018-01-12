@@ -1,4 +1,4 @@
-// findElemsClass - ver. 1.0.0
+// findElemsClass - ver. 1.0.1
 
 export let findElemsClass = function(elemsClass, lookPlace) {
 
@@ -12,16 +12,11 @@ export let findElemsClass = function(elemsClass, lookPlace) {
 
 		}
 
-	} else {
-
-		console.error();
-		return false;
-
 	}
 
 };
 
-// findFirstClass - ver. 1.0.0
+// findFirstClass - ver. 1.0.1
 
 export let findFirstClass = function(elemClass, lookPlace) {
 
@@ -35,16 +30,11 @@ export let findFirstClass = function(elemClass, lookPlace) {
 
 		}
 
-	} else {
-
-		console.error();
-		return false;
-
 	}
 
 };
 
-// findElemsClasses - ver. 1.0.0
+// findElemsClasses - ver. 1.0.1
 
 export let findElemsClasses = function(elemsClassesArray, lookPlace) {
 
@@ -74,16 +64,11 @@ export let findElemsClasses = function(elemsClassesArray, lookPlace) {
 
 		}
 
-	} else {
-
-		console.error();
-		return false;
-
 	}
 
 };
 
-// findElemsTag - ver. 1.0.0
+// findElemsTag - ver. 1.0.1
 
 export let findElemsTag = function(elemsTag, lookPlace) {
 
@@ -97,16 +82,11 @@ export let findElemsTag = function(elemsTag, lookPlace) {
 
 		}
 
-	} else {
-
-		console.error();
-		return false;
-
 	}
 
 };
 
-// findFirstTag - ver. 1.0.0
+// findFirstTag - ver. 1.0.1
 
 export let findFirstTag = function(elemTag, lookPlace) {
 
@@ -120,16 +100,11 @@ export let findFirstTag = function(elemTag, lookPlace) {
 
 		}
 
-	} else {
-
-		console.error();
-		return false;
-
 	}
 
 };
 
-// findElemsTags - ver. 1.0.0
+// findElemsTags - ver. 1.0.1
 
 export let findElemsTags = function(elemsTagsArray, lookPlace) {
 
@@ -154,11 +129,6 @@ export let findElemsTags = function(elemsTagsArray, lookPlace) {
 			return array;
 
 		}
-
-	} else {
-
-		console.error();
-		return false;
 
 	}
 
