@@ -1,11 +1,3 @@
-// Description
-// * * * = * * *
-
-// Список классов состояний. Можно выбирать как отдельными классами так и объектом с их полным списком. 
-
-// * * * = * * *
-// End Description
-
 let activeClass = "is-active";
 let successClass = "is-success";
 let errorClass = "is-error";
