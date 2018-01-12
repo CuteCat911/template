@@ -1,4 +1,4 @@
-// PageLoad - ver. 1.0.0
+// PageLoad - ver. 1.0.1
 
 let eventArray = [];
 
@@ -8,7 +8,7 @@ export let pageLoad = function(funcs) {
 
 		eventArray.push(funcs);
 
-	} else if (funcs && typeof funcs === "object") {
+	} else if (funcs && Array.isArray(funcs)) {
 
 		for (let func of funcs) {
 
