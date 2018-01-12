@@ -1,39 +1,18 @@
-// applyClasses - ver. 1.0.1
-
-// Description
-// * * * = * * *
-
-// Функция для добавления или удаления списка классов у элемента.
-
-// Принимает в себя:
-// 1. Элемент (elem);
-// 2. Массив с названиями классов (arrayClasses);
-// 3. Событие которое должно быть сделано (event);
-
-// Возможные значения параметра event:
-// 1. add - добавление классов;
-// 2. remove - удаление классов;
-
-// * * * = * * *
-// End Description
+// applyClasses - ver. 1.0.0
 
 export let applyClasses = function(elem, arrayClasses, event) {
 
-	if ((elem && typeof elem === "object") && (arrayClasses && typeof arrayClasses === "object") && (event && typeof event === "string")) {
+	if ((elem && typeof elem === "object") && (arrayClasses &&  Array.isArray(arrayClasses)) && (event && typeof event === "string")) {
 
 		for (let item of arrayClasses) {
 
-			if (event == "add") {
+			if (typeof item === "string") {
 
-				if (item && typeof item === "string") {
+				if (event == "add") {
 
 					elem.classList.add(item);
 
-				}
-
-			} else if (event == "remove") {
-
-				if (item && typeof item === "string") {
+				} else if (event == "remove") {
 
 					elem.classList.remove(item);
 
