@@ -2,7 +2,7 @@ import {findElemsClass, findFirstClass} from "./find";
 import {applyClasses} from "./apply-classes";
 import {hideClass} from "./state-classes";
 
-// loader - ver. 1.0.0
+// loader - ver. 1.1.0
 
 export let loader = {
 	info: {
@@ -23,12 +23,12 @@ export let loader = {
 				block: {
 					el: null,
 					tag: "div",
-					classes: (params && (params.blockClasses && Array.isArray(params.blockClasses))) ? [params.blockClasses] : [this.info[mode].block]
+					classes: (params && (params.blockClasses && Array.isArray(params.blockClasses))) ? params.blockClasses : [this.info[mode].block]
 				},
 				indicator: {
 					el: null,
 					tag: "div",
-					classes: (params && (params.indicatorClasses && Array.isArray(params.indicatorClasses))) ? [params.indicatorClasses] : [this.info[mode].indicator]
+					classes: (params && (params.indicatorClasses && Array.isArray(params.indicatorClasses))) ? params.indicatorClasses : [this.info[mode].indicator]
 				}
 			};
 
@@ -62,7 +62,7 @@ export let loader = {
 				loaders: null,
 				type: (params.type && typeof params.type === "string") ? params.type : "hide",
 				parent: (params.parent && typeof params.parent === "string") ? params.parent : null,
-				timeout: (params.timeout > 0 && typeof params.timeout === "numver") ? params.timeout : 0
+				timeout: (params.timeout > 0 && typeof params.timeout === "number") ? params.timeout : 0
 			};
 			let removeLoader = function() {
 
@@ -127,6 +127,23 @@ export let loader = {
 			}
 
 			removeLoader();
+
+		}
+
+	},
+	getInfo(type, el) {
+		
+		if (type && typeof type === "string") {
+
+			return this.info[type];
+
+		} else if ((type && typeof type === "string") && (el && typeof el === "string")) {
+
+			return this.info[type][el];
+
+		} else {
+
+			return this.info;
 
 		}
 
