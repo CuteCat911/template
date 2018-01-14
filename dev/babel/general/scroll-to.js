@@ -1,116 +1,80 @@
-// scrollTo - ver 1.1.0
+// scrollTo - ver 1.0.0
 
-// export let scrollTo = function(params) {
+import {getWindowScroll, getDocumentHeight} from "./window-scroll";
 
-//     if (typeof params.position === "number" && (params.position <= 0 || params.position >= 0)) {
+export let scrollTo = function(params) {
 
-//         let moduleInfo = {
-//             position: params.position,
-//             fps: 60,
-//             speed: 1.5,
-//             calibration: true,
-//             options: {
-//                 startScroll: getWindowScroll(),
-//                 mode: null,
-//                 documentHeight: null,
-//                 windowHeight: null
-//             }
-//         };
-//         let options = moduleInfo.options;
-//         let setParams = function() {
+  if (params.position <= 0 || params.position >= 0) {
 
-//             for (let item of ["fps", "speed"]) {
+    let info = {
+      position: params.position,
+      fps: (params.fps > 0) ? params.fps : 60,
+      speed: (params.speed > 0) ? params.speed ? 1.5,
+      calibration: (!params.calibration && typeof params.calibration === "boolean") ? params.calibration : true,
+      params: {
+        startScroll: getWindowScroll(),
+        mode: (getWindowScroll() < params.position) ? "bottom" : "top",
+        documentHeight: getDocumentHeight(),
+        windowHeight: window.innerHeight
+      }
+    };
+    let params = info.params;
+    let calibration = function() {
 
-//                 if (params[item] && typeof params[item] === "number") {
+      if (info.calibration) {
 
-//                     moduleInfo[item] = Math.abs(params[item]);
+        let scroll = getWindowScroll();
 
-//                 };
+        if (scroll != info.position) {
 
-//             };
+          window.scrollTo(0, info.position);
 
-//             if (params.calibration == false) {
+        }
 
-//                 moduleInfo.calibration = params.calibration;
+      }
 
-//             };
+    };
+    let scrollToPosition = function() {
 
-//         };
-//         let setMode = function() {
+      if (params.mode && typeof params.mode === "string") {
 
-//             if (options.startScroll < moduleInfo.position) {
+        setTimeout(function() {
 
-//                 options.mode = "bottom";
-//                 options.documentHeight = getScrollHeight();
-//                 options.windowHeight = window.innerHeight;
+          let idScroll = requestAnimationFrame(scrollToPosition);
+          let scroll = getWindowScroll();
 
-//             } else if (options.startScroll > moduleInfo.position) {
+          if (params.mode == "top") {
 
-//                 options.mode = "top";
+            window.scrollTo(0, scroll - 50 * info.speed);
 
-//             };
+            if (scroll <= info.position || scroll <= 0) {
 
-//         };
-//         let calibration = function() {
+              window.cancelAnimationFrame(idScroll);
+              calibration();
 
-//             if (moduleInfo.calibration == true) {
+            };
 
-//                 let scroll = getWindowScroll();
+          } else if (params.mode == "bottom") {
 
-//                 if (scroll != moduleInfo.position) {
+            window.scrollTo(0, scroll + 50 * info.speed);
 
-//                     window.scrollTo(0, moduleInfo.position);
+            if (scroll >= info.position || scroll >= params.documentHeight - params.windowHeight) {
 
-//                 };
+              window.cancelAnimationFrame(idScroll);
+              calibration();
 
-//             };
+            };
 
-//         };
-//         let scrollToPosition = function() {
+          }
 
-//             let mode = options.mode;
+        }, 1000 / info.fps);
 
-//             if (mode && typeof mode === "string") {
+      }
 
-//                 setTimeout(function() {
+    };
 
-//                     let idScroll = requestAnimationFrame(scrollToPosition);
-//                     let scroll = getWindowScroll();
+    scrollToPosition();
 
-//                     if (mode == "top") {
+  }
 
-//                         window.scrollTo(0, scroll - 50 * moduleInfo.speed);
-
-//                         if (scroll <= moduleInfo.position || scroll <= 0) {
-
-//                             window.cancelAnimationFrame(idScroll);
-//                             calibration();
-
-//                         };
-
-//                     } else if (mode == "bottom") {
-
-//                         window.scrollTo(0, scroll + 50 * moduleInfo.speed);
-
-//                         if (scroll >= moduleInfo.position || scroll >= options.documentHeight - options.windowHeight) {
-
-//                             window.cancelAnimationFrame(idScroll);
-//                             calibration();
-
-//                         };
-
-//                     };
-
-//                 }, 1000 / moduleInfo.fps);
-
-//             };
-
-//         };
-
-//         setParams();
-//         setMode();
-//         scrollToPosition();
-
-//     };
-
-// };
+};
