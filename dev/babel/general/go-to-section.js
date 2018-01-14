@@ -1,325 +1,168 @@
 // GoToSection - ver 1.0.0
 
-// Description
-// * * * = * * *
-
-// функция конструктор реализующая якорьную систему на странице.
-
-// Принимает в себя объект с параметрами.
-// Описание параметров:
-// 1. pointers (обязательный) (тип string) - класс элементов, которые будут играть роль якорей.
-// 2. sections (обязательный) (тип string) - класс элементов, которые будут играть роль секций.
-// 3. dynamic (не обязательный) (тип boolean) - включает или выключает работу с динамическими элементами (подгружаемые ajax-ом).
-// 4. fps (не обязательный) (тип number) - количество кадров во время прокрутки страницы.
-// 5. speed (не обязательный) (тип number) - скорость прокрутки страницы.
-// 6. headerClass (не обязательный) (тип string) - класс шапки, используется для корректной работы с фиксированными шапками.
-// 7. headerMode (не обязательный) (тип string) - режим в котором работает шапка.
-// 8. headerMinWidth (не обязательный) (тип number) - минимальный размер экрана, при котором нужно учитвать высоту шапки при скролле до секции.
-
-// Возможные значения параметра headerMode:
-// 1. default - стандартное значение, стоит по-умолчанию, высота шапки не будет учитываться.
-// 2. absolute - указывается при абсолютно спозиционированной шапке, высота шапки не будет учитываться
-// 3. fixing - указывается при фиксированной шапке, высота шапки будет учитываться всегда.
-// 4. lurking - указывается при фиксированной шапке, которая при скролле вниз скрывается, при скролле вверх появляется, высота шапки будет учитываться в зависимости от того в какую сторону мы скролим страницу.
-
-// Пример объекта с параметрами:
-// {
-//     pointers: "js-nav",
-//     sections: "section",
-//     headerMode: "lurking",
-//     headerClass: "sticky-header"
-// };
-
-// Доступные атрибуты:
-// 1. data-section-name - содержит название секции, к которой нужно проскролить страницу (обязателен для pointers и sections).
-
-// Доступные методы:
-// 1. afterScroll - отработает после того как страница просскролиться до секции.
-// Принимает в себя функцию или массив функций, которые будут выполнены.
-// 2. beforeScroll - отработает до того как страница просскролиться до секции.
-// Принимает в себя функцию или массив функций, которые будут выполнены.
-// 3. goToSection - проскролит страницу до указанной секции.
-
-// Описание функционала якорьной системы.
-// Может совместно работать с плагином StickyHeader, так и просто с стилизованными шапками.
-// У кажого якоря и секции должен быть обязателен атрибут data-section-name, где записано название.
-
-// * * * = * * *
-// End Description
-
 import {findElemsClass, findFirstClass} from "./find";
 import {findCurrentParent} from "./find-current-parent";
-import {getWindowScroll, scrollTo} from "./window-scroll";
+import {getWindowScroll} from "./window-scroll";
+import {scrollTo} from "./scroll-to";
 
-export let GoToSection = function(params) {
+export let GoToSection = class {
 
-  if ((params.pointers && typeof params.pointers === "string") && (params.sections && typeof params.sections === "string")) {
+  constructor(params) {
 
-    let module = this;
-    let moduleInfo = {
-      pointer: {
-        class: params.pointers,
-        elems: findElemsClass(params.pointers, document)
-      },
-      section: {
-        class: params.sections,
-        elems: findElemsClass(params.sections, document)
-      },
-      header: {
-        class: null,
-        mode: "default",
-        elem: null,
-        minWidth: null
-      },
-      options: {
-        dynamic: false,
-        fps: 60,
-        speed: 1.5
-      },
-      funcs: {
-        after: [],
-        before: []
-      }
-    };
-    let dataAttr = {
-      sectionName: "data-section-name"
-    };
+    if ((params.pointers && typeof params.pointers === "string") && (params.sections && typeof params.sections === "string")) {
 
-    // Сокращение часто используемых частей объекта moduleInfo
+      let $module = this;
 
-    let pointer = moduleInfo.pointer;
-    let section = moduleInfo.section;
-    let header = moduleInfo.header;
-    let options = moduleInfo.options;
-    let funcs = moduleInfo.funcs;
+      this.info = {
+        pointer: {
+          class: params.pointers,
+          elems: (findElemsClass(params.pointers, document)) ? findElemsClass(params.pointers, document) : null
+        },
+        section: {
+          class: params.sections,
+          elems: (findElemsClass(params.sections, document)) ? findElemsClass(params.sections, document) : null
+        },
+        header: {
+          class: (params.header && typeof params.header === "string") ? params.header : null,
+          el: ((params.header && typeof params.header === "string") && findFirstClass(params.header, document)) ? findFirstClass(params.header, document) : null,
+          mode: (params.headerMode && typeof params.headerMode === "string") ? params.headerMode : "default",
+          minWidth: (params.headerMinWidth > 0) ? params.headerMinWidth : null
+        },
+        options: {
+          fps: (params.fps > 0) ? params.fps : 60,
+          speed: (params.speed > 0) ? params.speed : 1.5,
+          dynamic: (params.dynamic && typeof params.dynamic === "boolean") ? params.dynamic : false
+        },
+        funcs: {
+          after: [],
+          before: []
+        }
+      };
+      this.dataAttrs = {
+        section: "data-section-name"
+      };
+      this.helpFuncs = {
+        scrollTo(position, fps, speed) {
 
-    // End Сокращение часто используемых частей объекта moduleInfo
+          scrollTo({
+            position,
+            fps,
+            speed
+          });
 
-    // Вспомогательные функции
+        }
+      };
 
-    let helpFunc = {
-      findSectionName: function(elem) { // функция нахождения названия секции
+      let $pointer = this.info.pointer;
+      let $section = this.info.section;
+      let $options = this.info.options;
 
-        if (elem && typeof elem === "object") {
+      if ($pointer.elems && $section.elems && !$options.dynamic) {
 
-          let name = elem.getAttribute(dataAttr.sectionName);
+        for (let $pointerElem of $pointer.elems) {
 
-          if (name) {
+          $pointerElem.addEventListener("click", function() {
 
-            return name;
+            $module.__goToSection($pointerElem);
 
-          } else {
-
-            return false;
-
-          }
+          });
 
         }
 
-      },
-      addFunc: function(func, nameArray) { // Функция, позволяющая записывать в массив функцию или массив с функциями
+      } else if ($options.dynamic) {
 
-        if (func && (nameArray && typeof nameArray === "string")) {
+        document.addEventListener("click", function(e) {
 
-          if (typeof func === "function") {
+          let elem = e.target;
 
-            funcs[nameArray].push(func);
+          if (elem.classList.contains($pointer.class)) {
 
-          } else if (typeof func === "object") {
+            e.preventDefault();
+            $module.__findElems();
+            $module.__goToSection(elem);
 
-            for (let item of func) {
+          } else {
 
-              if (typeof item === "function") {
+            let parent = findCurrentParent(elem, $pointer.class);
 
-                funcs[nameArray].push(item);
+            if (parent) {
 
-              }
+              e.preventDefault();
+              $module.__findElems();
+              $module.__goToSection(elem);
 
             }
 
           }
 
-        }
-
-      },
-      applyFunc: function(nameArray) { // Функция, позволяющая пробегаться по массиву с функциями и выполнять каждую из них.
-
-        if (funcs[nameArray].length > 0) {
-
-          for (let item of funcs[nameArray]) {
-
-            item();
-
-          }
-
-        }
-
-      }
-    };
-
-    // End Вспомогательные функции
-
-    // Функция, которая записывает функцию или массив с функциями и которые будут выполены после скролла страницы до секции
-
-    module.afterScroll = function(func) {
-
-      helpfunc.addFunc(func, "after");
-
-    };
-
-    // End Функция, которая записывает функцию или массив с функциями и которые будут выполены после скролла страницы до секции
-
-    // Функция выполения функций в массиве после скролла страницы до секции
-
-    module.applyAfterScroll = function() {
-
-      helpFunc.applyFunc("after");
-
-    };
-
-    // End Функция выполения функций в массиве после скролла страницы до секции
-
-    // Функция, которая записывает функцию или массив с функциями и которые будут выполены до скролла страницы к секции
-
-    module.beforeScroll = function(func) {
-
-      helpfunc.addFunc(func, "before");
-
-    };
-
-    // End Функция, которая записывает функцию или массив с функциями и которые будут выполены до скролла страницы к секции
-
-    // Функция выполения функций в массиве до скролла страницы к секции
-
-    module.applyBeforeScroll = function() {
-
-      helpFunc.applyFunc("before");
-
-    };
-
-    // End Функция выполения функций в массиве до скролла страницы к секции
-
-    // Функция установки дефолтных или пользовательских параметров
-
-    module.setParams = function() {
-
-      if (params.dynamic == true) {
-
-        options.dynamic = params.dynamic;
+        });
 
       }
 
-      for (let item of ["fps", "speed"]) {
+    }
 
-        if (params[item] && typeof params[item] === "number") {
+  }
 
-          options[item] = Math.abs(params[item]);
+  __findElems() {
 
-        }
+    let $pointer = this.info.pointer;
+    let $section = this.info.section;
 
-      }
+    $pointer.elems = findElemsClass($pointer.class, document);
+    $section.elems = findElemsClass($section.class, document);
 
-      if (params.headerClass && typeof params.headerClass === "string") {
+  }
 
-        header.class = params.headerClass;
+  __goToSection(pointer) {
 
-      }
+    if (pointer && typeof pointer === "object") {
 
-      if (params.headerMode && typeof params.headerMode === "string") {
+      let $section = this.info.section;
+      let $header = this.info.header;
+      let $fps = this.info.options.fps;
+      let $speed = this.info.options.speed;
+      let $dataAttrs = this.dataAttrs;
+      let $helpFuncs = this.helpFuncs;
+      let sectionName = pointer.getAttribute($dataAttrs.section);
+      let top = getWindowScroll();
 
-        header.mode = params.headerMode;
+      if (sectionName) {
 
-      }
+        for (let $sectionElem of $section.elems) {
 
-      if (params.headerMinWidth && typeof params.headerMinWidth === "number") {
+          if ($sectionElem.getAttribute($dataAttrs.section) == sectionName) {
 
-        header.minWidth = Math.abs(params.headerMinWidth);
+            top += parseInt($sectionElem.getBoundingClientRect().top);
 
-      }
+            if ($header.el) {
 
-    };
+              let headerHeight = parseInt($header.el.offsetHeight);
 
-    // End Функция установки дефолтных или пользовательских параметров
+              if ($header.minWidth && $header.minWidth > window.innerWidth) {
 
-    // Функция нахождения шапки на странице
+                $helpFuncs.scrollTo(top, $fps, $speed);
 
-    module.findHeader = function() {
+              } else if (!$header.minWidth || ($header.minWidth && $header.minWidth <= window.innerWidth)) {
 
-      if (header.class && typeof header.class === "string") {
+                if ($header.mode == "fixed") {
 
-        header.elem = findFirstClass(header.class, document);
+                  $helpFuncs.scrollTo(top - headerHeight, $fps, $speed);
 
-      };
-
-    };
-
-    // End Функция нахождения шапки на странице
-
-    // Функция скролла страницы к указанной секции
-
-    module.goToSection = function(sectionName) {
-
-      if (sectionName && typeof sectionName === "string") {
-
-        let top = 0;
-        let scroll = getWindowScroll();
-
-        for (let section of section.elems) {
-
-          if (section.getAttribute(dataAttr.sectionName) == sectionName) {
-
-            let applyScrollTo = function(coord, fps, speed, calibration) {
-
-              let params = {
-                position: coord,
-                fps: fps,
-                speed: speed
-              };
-
-              if (calibration == false) {
-
-                params.calibration = calibration;
-
-              }
-
-              scrollTo(params);
-
-            };
-            let fps = options.fps;
-            let speed = options.speed;
-
-            top = parseInt(section.getBoundingClientRect().top + scroll);
-
-            if (header.elem && header.mode) {
-
-              let headerHeight = header.elem.offsetHeight;
-              let windowWidth = window.innerWidth;
-
-              if (header.minWidth && header.minWidth > windowWidth) {
-
-                applyScrollTo(top, fps, speed);
-
-              } else if (!header.minWidth || (header.minWidth && header.minWidth <= windowWidth)) {
-
-                if (header.mode == "fixed") {
-
-                  applyScrollTo(top - parseInt(headerHeight), fps, speed);
-
-                } else if (header.mode == "lurking") {
+                } else if ($header.mode == "lurking") {
 
                   if (top > scroll) {
 
-                    applyScrollTo(top - parseInt(headerHeight), fps, speed, false);
+                    $helpFuncs.scrollTo(top - headerHeight, $fps, $speed);
 
                   } else {
 
-                    applyScrollTo(top, fps, speed, false);
+                    $helpFuncs.scrollTo(top, $fps, $speed);
 
                   }
 
-                } else  {
+                } else if ($header.mode == "default") {
 
-                  applyScrollTo(top, fps, speed);
+                  $helpFuncs.scrollTo(top, $fps, $speed);
 
                 }
 
@@ -327,65 +170,13 @@ export let GoToSection = function(params) {
 
             } else {
 
-              applyScrollTo(top, fps, speed);
+              $helpFuncs.scrollTo(top, $fps, $speed);
 
             }
 
-            module.applyAfterScroll();
-
           }
 
         }
-
-      }
-
-    };
-
-    // End Функция скролла страницы к указанной секции
-
-    module.setParams();
-    module.findHeader();
-
-    if (options.dynamic == true) {
-
-      document.addEventListener("click", function(e) {
-
-        let elem = e.target;
-
-        if (elem.classList.contains(pointer.class)) {
-
-          pointer.elems = findElemsClass(pointer.class);
-          section.elems = findElemsClass(section.class);
-          module.applyBeforeScroll();
-          module.goToSection(helpFunc.findSectionName(elem));
-
-        } else {
-
-          let parent = findCurrentParent(elem, goToSection.pointer.class);
-
-          if (parent) {
-
-            pointer.elems = findElemsClass(pointer.class);
-            section.elems = findElemsClass(section.class);
-            module.applyBeforeScroll();
-            module.goToSection(helpFunc.findSectionName(parent));
-
-          }
-
-        }
-
-      });
-
-    } else if (pointer.elems && section.elems) {
-
-      for (let pointer of pointer.elems) {
-
-        pointer.addEventListener("click", function() {
-
-          module.applyBeforeScroll();
-          module.goToSection(helpFunc.findSectionName(pointer));
-
-        });
 
       }
 
