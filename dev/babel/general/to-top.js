@@ -1,170 +1,152 @@
 // ToTop - ver. 1.0.0
 
-// Description
-// * * * = * * *
-
-// Функция конструктор для кнопок "наверх" на сайте;
-
-// Принимает в себя объект с параметрами.
-// Описание параметров:
-// 1. elems (обязательный) (тип string) - класс элементов (кнопок).
-// 2. fps (не обязательный) (тип number) - количество кадров во время прокрутки страницы.
-// 3. speed (не обязательный) (тип number) - скорость прокрутки страницы.
-// 4. hide (не обязательный) (тип boolean) - флаг отвечающий за скрытие кнопки вверху страницы.
-// 5. hideIndent (не обязательный) (тип number или string) - размер отступа от верха страницы после которого нужно показать кнопку.
-
-//Пример передаваемого объекта:
-// {
-//  elems: "to-class",
-//  speed: 2,
-//  hide: true,
-//  hideIndent: "screenX2"
-// }
-
-// Параметр hideIndent (тип string) - записывается со значение screen или screenX3.
-// Где screen - обозначение высоты экрана пользователя, а X3 количество экранов.
-
-// * * * = * * *
-// End Description
-
 import {findElemsClass} from "./find";
+import {scrollTo} from "./scroll-to";
+import {findCurrentParent} from "./find-current-parent";
 import {hideClass} from "./state-classes";
 import {windowScroll, getWindowScroll} from "./window-scroll";
 
-export let ToTop = function(params) {
+export let ToTop = class {
+
+  constructor(params) {
 
     if (params.elems && typeof params.elems === "string") {
 
-        let module = this;
-        let moduleInfo =  {
-            elems: findElemsClass(params.elems, document),
-            fps: 60,
-            speed: 1.5,
-            hide: {
-                active: false,
-                indent: "screen"
-            }
-        };
+      let $module = this;
 
-        if (moduleInfo.elems) {
+      this.info = {
+        topElems: {
+          class: params.elems,
+          elems: findElemsClass(params.elems, document)
+        },
+        fps: (params.fps > 0) ? params.fps : 60,
+        speed: (params.speed > 0) ? params.speed : 1.5,
+        dynamic: (params.dynamic && typeof params.dynamic === "boolean") ? params.dynamic : false,
+        hide: {
+          active: (params.hide && typeof params.hide === "boolean") ? params.hide : false,
+          indent: (params.hideIndent && (typeof params.hideIndent === "string" || params.hideIndent > 0)) ? params.hideIndent : "screen"
+        }
+      };
+      this.helpFuncs = {
+        scroll() {
 
-            module.setParams = function() {
+          windowScroll($module.__hide);
 
-                for (let item of ["fps", "speed"]) {
+        }
+      };
 
-                    if (params[item] && typeof params[item] === "number") {
+      let $info = this.info;
+      let $helpFuncs = this.helpFuncs;
 
-                        moduleInfo[item] = Math.abs(params[item]);
+      if ($info.topElems.elems) {
 
-                    }
+        for (let $elem of $info.topElems.elems) {
 
-                }
-
-                if (params.hide == true) {
-
-                    moduleInfo.hide.active = params.hide;
-
-                }
-
-                if (params.hideIndent && typeof params.hideIndent !== "object") {
-
-                    moduleInfo.hide.indent = params.hideIndent;
-
-                }
-
-            };
-            module.top = function() {
-
-                setTimeout(function() {
-
-                    let idAnimation = requestAnimationFrame(module.top);
-                    let scroll = getWindowScroll();
-
-                    window.scrollTo(0, scroll - 50 * moduleInfo.speed);
-
-                    if (scroll <= 0) {
-
-                        window.cancelAnimationFrame(idAnimation);
-
-                    }
-
-                }, 1000 / moduleInfo.fps);
-
-            };
-            module.hide = function() {
-
-                let scroll = getWindowScroll();
-                let indent;
-
-                if (typeof moduleInfo.hide.indent === "number") {
-
-                    indent = moduleInfo.hide.indent;
-
-                } else if (moduleInfo.hide.indent.split("X")[0] == "screen") {
-
-                    let windowHeight = window.innerHeight;
-                    let factor = moduleInfo.hide.indent.split("X")[1];
-
-                    if (!factor || typeof +factor !== "number") {
-
-                        factor = 1;
-
-                    }
-
-                    indent = windowHeight * factor;
-
-                }
-
-                if (indent) {
-
-                    if (scroll >= indent) {
-
-                        for (let item of moduleInfo.elems) {
-
-                            item.classList.remove(hideClass);
-
-                        }
-
-                    } else {
-
-                        for (let item of moduleInfo.elems) {
-
-                            item.classList.add(hideClass);
-
-                        }
-
-                    }
-
-                }
-
-            };
-
-            module.setParams();
-
-            windowScroll(module.hide);
-
-            for (let item of moduleInfo.elems) {
-
-                item.addEventListener("click", function() {
-
-                    module.top();
-
-                });
-
-            }
-
-        } else {
-
-            console.error();
-            return false;
+          $elem.addEventListener("click", $module.__toTop);
 
         }
 
-    } else {
+      } else if ($info.dynamic) {
 
-        console.error();
-        return false;
+        document.addEventListener("click", function(e) {
+
+          let elem = e.target;
+
+          if (elem.classList.contains($info.topElems.class)) {
+
+            $module.findBtns();
+            $module.__toTop();
+
+          } else {
+
+            let parent = findCurrentParent(elem, $info.topElems.class);
+
+            if (parent) {
+
+              e.preventDefault();
+              $module.findBtns();
+              $module.__toTop();
+
+            }
+
+          }
+
+        });
+
+      }
+
+      $helpFuncs.scroll();
 
     }
+
+  }
+
+  findBtns() {
+
+    if (this.info) {
+
+      let $topElems = this.info.topElems;
+
+      $topElems.elems = findElemsClass($topElems.class, document);
+
+    }
+
+  }
+
+  __toTop() {
+
+    let info = this.info;
+
+    scrollTo({
+      position: 0,
+      fps: info.fps,
+      speed: info.speed;
+    });
+
+  }
+
+  __hide() {
+
+    let $elems = this.info.topElems.elems;
+    let $hide = this.hide;
+
+    if ($hide.active && $elems) {
+
+      let scroll = getWindowScroll();
+      let indent;
+
+      if (typeof $hide.indent === "number") {
+
+        indent = $hide.indent;
+
+      } else if (typeof $hide.indent.split("X")[0] === "screen") {
+
+        let factor = ($hide.indent.split("X")[1] > 1) ? $hide.indent.split("X")[1] : 1;
+
+        indent = window.innerHeight * factor;
+
+      }
+
+      if (indent) {
+
+        for (let $elem of $elems) {
+
+          if (scroll >= indent) {
+
+            $elem.classList.remove(hideClass);
+
+          } else {
+
+            $elem.classList.add(hideClass);
+
+          }
+
+        }
+
+      }
+
+    }
+
+  }
 
 };
