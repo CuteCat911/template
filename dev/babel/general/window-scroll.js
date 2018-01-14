@@ -1,3 +1,5 @@
+// global ver. 1.0.1
+
 // getWindowScroll - ver. 1.0.0
 
 export let getWindowScroll = function() {
@@ -8,9 +10,9 @@ export let getWindowScroll = function() {
 
 };
 
-// getScrollHeight - ver 1.0.0
+// getScrollHeight - ver 1.0.1
 
-export let getScrollHeight = function() {
+export let getDocumentHeight = function() {
 
   let height = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight, document.body.offsetHeight, document.documentElement.offsetHeight, document.body.clientHeight, document.documentElement.clientHeight);
 
@@ -18,7 +20,7 @@ export let getScrollHeight = function() {
 
 };
 
-// WindowScroll - ver. 1.2.0
+// WindowScroll - ver. 1.0.0
 
 import {debounce} from "./debounce";
 
