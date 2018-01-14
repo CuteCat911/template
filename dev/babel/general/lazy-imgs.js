@@ -1,4 +1,4 @@
-// LazyImgs - ver 1.0.0
+// LazyImgs - ver 1.0.1
 
 import {findElemsClass} from "./find";
 import {loader} from "./loader";
@@ -24,7 +24,7 @@ export let LazyImgs = class {
           windowHeight: null
         },
         options: {
-          indent: (params.indent && (params.indent <= 0 || params.indent >= 0)) ? params.indent : 0,
+          indent: (params.indent <= 0 || params.indent >= 0) ? params.indent : 0,
           preloader: {
             active: (params.preloader && typeof params.preloader === "boolean") ? params.preloader : false,
             type: (params.preloaderType && typeof params.preloader === "string") ? params.preloaderType : null,
