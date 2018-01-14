@@ -1,391 +1,327 @@
 // LazyImgs - ver 1.0.0
 
-// Description
-// * * * = * * *
-
-// Функция конструктор позволяющая подгружать изображения на сайте во время просмотра страницы.
-
-// Принимает в себя объект с параметрами.
-// Описание параметров:
-// 1. imgs (обязательный) (тип string) - класс элементов на место которых подгрузяться изображения
-// 2. dynamic (не обязательный) (тип boolean) - включает или выключает работы с динамическими элементами (подгружаемые ajax-ом). Обязательно использовать метод findImgs.
-// 3. indent (не обязательный) (тип number) - задает размер отступа до загрузки изображения.
-// 4. preloader (не обязательный) (тип object или string) - позволяет задать или включить прелоадер для загружаемых изображений.
-
-// Возможные значения параметра preloader:
-// 1. object - элемент который будет использован как прелоадер
-// 2. default - использование дефолтного прелоудера из плагина loader
-// 3. custom - использование дефолтного прелоудера из плагина loader, но с возможностью задать свои классы для блока и индикатора
-
-// Пример объекта с параметрами:
-// {
-//   imgs: "js-lazzy-img",
-//   dynamic: true,
-//   indent: 50,
-//   preloader: "default"
-// }
-
-// Доступные атрибуты:
-// 1. data-style-img - ссылка на изображение для тех элементов, у которых изображение сделано через стили (background-image)
-// 2. data-img - ссылка на изображение для тега <img>.
-// 3. data-alt - текст изображения для тега <img>.
-// 4. data-picture - при наличии включает поддержку тега <picture>.
-// 5. data-picture-rules - задает правила source для тега <picture>.
-
-// Пример значения атрибута data-picture-rules:
-// data-picture-rules="media=(max-width: 1024px) ? srcset=/img/img1.jpg, /img/img1.jpg 2x; media=(max-width: 640px) ? srcset=/img/img2.jpg, /img/img2.jpg 2x"
-// где через ";" указываются отдельные правила для тегов source
-// через " ? " задаются параметры со значениями указанными через знак "=";
-
-// Доступные методы:
-// 1. findImgs - находит все элементы для подгрузки изображений, следует обязательно вызывать после динамического добавления элементов.
-
-// Описание функционала ленивой подгрузки изображений.
-// Подгрузка изображений осуществляется только тогда когда страница будет проскроллена до того места где должно находиться изображение (+- указанный промежуток в px).
-// Изображение при просмотре странице подгружается только один раз.
-// Если указан прелоадер, то для всех изображений перед загрузкой он будет добавлен и исчезнет только после загрузки изображения.
-// Поддерживаются изображения добавленые через стили, теги: img, picture и source.
-// Так же при использованиее тега <noscript> можно добиться того что при отключенном js изображения все равно будут загружены.
-
-// * * * = * * *
-// End Description
-
 import {findElemsClass} from "./find";
-import {windowScroll, getScrollHeight} from "./window-scroll";
+import {loader} from "./loader";
 import {applyClasses} from "./apply-classes";
+import {windowScroll} from "./window-scroll";
 import {getXmlHttp} from "./ajax";
-import {createLoader} from "./loader";
 
-export let LazyImgs = function(params) {
+export let LazyImgs = class {
 
-  if (params.imgs && typeof params.imgs === "string") {
+  constructor(params) {
 
-    let module = this;
-    let moduleInfo = {
-      imgs: findElemsClass(params.imgs, document),
-      imgsClass: params.imgs,
-      imgsInfo: {},
-      options: {
-        dynamic: false,
-        indent: 0,
-        windowHeight: null
-      },
-      preloader: false
-    };
-    let dataAttr = {
-      styleImg: "data-style-img",
-      img: "data-img",
-      alt: "data-alt",
-      picture: {
-        active: "data-picture",
-        rules: "data-picture-rules"
-      }
-    };
+    if (params.imgs && typeof params.imgs === "string") {
 
-    // Сокращения параметров объекта moduleInfo
+      let $module = this;
 
-    let imgsClass = moduleInfo.imgsClass;
-    let imgsInfo = moduleInfo.imgsInfo;
-    let options = moduleInfo.options;
-
-    // End Сокращения параметров объекта moduleInfo
-
-    // Установка дефолтных параметров
-
-    module.setParams = function() {
-
-      if (params.dynamic == true) {
-
-        options.dynamic = params.dynamic;
-
-      }
-
-      if (params.indent && typeof params.indent === "number") {
-
-        options.indent = params.indent;
-
-      }
-
-      if (params.preloader) {
-
-        if (typeof params.preloader === "string") {
-
-          if (params.preloader == "default") {
-
-            moduleInfo.preloader = createLoader();
-
-          } else if (params.preloader == "custom") {
-
-            let blockClass = params.preloaderBlock;
-            let indicatorClass = params.preloaderIndicator;
-
-            if ((blockClass && typeof blockClass === "string") && (indicatorClass && typeof indicatorClass === "string")) {
-
-              moduleInfo.preloader = createLoader(blockClass, indicatorClass);
-
-            }
-
+      this.info = {
+        imgs: {
+          class: params.imgs,
+          elems: findElemsClass(params.imgs, document),
+          info: {}
+        },
+        params: {
+          windowHeight: null
+        },
+        options: {
+          indent: (params.indent && (params.indent <= 0 || params.indent >= 0)) ? params.indent : 0,
+          preloader: {
+            active: (params.preloader && typeof params.preloader === "boolean") ? params.preloader : false,
+            type: (params.preloaderType && typeof params.preloader === "string") ? params.preloaderType : null,
+            classes: {
+              block: (params.preloaderType == "custom" && (params.preloaderBlock && typeof params.preloaderBlock === "string")) ? params.preloaderBlock : null,
+              indicator: (params.preloaderType == "custom" && (params.preloaderIndicator && typeof params.preloaderIndicator === "string")) ? params.preloaderIndicator : null
+            },
+            el: (params.preloaderType == "element" && (params.preloaderElement && typeof params.preloaderElement === "object")) ? params.preloaderElement : null
           }
-
-        } else if (typeof params.preloader === "object") {
-
-          moduleInfo.preloader = params.preloader;
-
         }
+      };
+      this.dataAttrs = {
+        styleImg: "data-style-img",
+        img: "data-img",
+        alt: "data-alt",
+        picture: {
+          active: "data-picture",
+          rules: "data-picture-rules"
+        }
+      };
+      this.helpFuncs = {
+        scroll() {
+          $module.__scroll();
+        },
+        load(url) {
 
-      }
+          if (url && typeof url === "string") {
 
-      options.scrollHeight = getScrollHeight();
+            return new Promise(function(resolve, reject) {
 
-    };
+              let request = getXmlHttp();
 
-    // End Установка дефолтных параметров
+              request.open("GET", url);
+              request.onload = function() {
 
-    module.setParams();
+                if (request.status == 200) {
 
-    if (moduleInfo.imgs || options.dynamic == true) {
-
-      // Загрузка изображения и добавление его на страницу
-
-      module.load = function(info) {
-
-        if (info && typeof info === "object") {
-
-          let request = getXmlHttp();
-          let url = info.options.styleImg || info.options.img;
-          let imgElem = info.imgElem;
-          let options = info.options;
-          let picture = info.picture;
-
-          request.open("GET", url);
-          request.onreadystatechange = function() {
-
-            if (request.readyState == 4) {
-
-              if (request.status == 200) {
-
-                let parent = info.element.parentNode;
-
-                if (imgElem.type == "style") {
-
-                  imgElem.element.style.backgroundImage = "url(" + url + ")";
-
-                } else if (imgElem.type == "img") {
-
-                  imgElem.element.setAttribute("src", url);
-
-                  if (options.alt) {
-
-                    imgElem.element.setAttribute("alt", options.alt);
-
-                  } else {
-
-                    imgElem.element.setAttribute("alt", "");
-
-                  }
-
-                }
-
-                if (picture.active == true) {
-
-                  picture.element.appendChild(imgElem.element);
-                  parent.replaceChild(picture.element, info.element);
+                  resolve();
 
                 } else {
 
-                  parent.replaceChild(imgElem.element, info.element);
+                  reject();
 
                 }
 
-                options.load = true;
+              };
+              request.onerror = function() {
+                reject();
+              };
+              request.send(null);
 
-              } else {
-
-                options.load = false;
-
-              }
-
-            }
-
-          };
-          request.send(null);
-
-        }
-
-      };
-
-      // End Загрузка изображения и добавление его на страницу
-
-      // Отслеживание позиции изображения при скролле страницы
-
-      module.scroll = function() {
-
-        if (moduleInfo.imgs) {
-
-          options.windowHeight = window.innerHeight;
-
-          let windowHeight = options.windowHeight;
-
-          for (let i in imgsInfo) {
-
-            let info = imgsInfo[i];
-
-            info.top = info.element.getBoundingClientRect().top;
-            info.height = info.element.offsetHeight;
-
-            if (info.options.load == false && (info.top - windowHeight - options.indent <= 0) && (info.top + info.height + options.indent >= 0)) {
-
-              module.load(info);
-              info.options.load = "loading";
-
-            }
+            });
 
           }
 
         }
-
       };
 
-      // End Отслеживание позиции изображения при скролле страницы
+      let $helpFuncs = this.helpFuncs;
 
-      // Нахождение всей информации о подгружаемой картинке
+      this.__createPreloader();
+      this.__getInfoImgs();
+      windowScroll($helpFuncs.scroll);
 
-      module.getInfoImgs = function() {
+    }
 
-        for (let i = 0; i < moduleInfo.imgs.length; i++) {
+  }
 
-          let img = moduleInfo.imgs[i];
+  findImgs() {
 
-          if (moduleInfo.preloader) {
+    if (this.info) {
 
-            let preloader = moduleInfo.preloader.cloneNode(true);
+      let imgs = this.info.imgs;
 
-            img.appendChild(preloader);
+      imgs.elems = findElemsClass(imgs.class, document);
+      this.__getInfoImgs();
 
-          }
+    }
 
-          imgsInfo[i] = {
-            element: img,
-            top: null,
-            height: null,
-            imgElem: {
-              element: null,
-              type: null,
-              tag: null,
-              classes: []
-            },
-            options: {
-              styleImg: null,
-              img: null,
-              alt: null,
-              load: false
-            },
-            picture: {
-              active: false,
-              element: null,
-              sources: {}
-            }
-          };
+  }
 
-          let imgElem = imgsInfo[i].imgElem;
-          let options = imgsInfo[i].options;
-          let picture = imgsInfo[i].picture;
+  __createPreloader() {
 
-          if (img.hasAttribute(dataAttr.styleImg)) {
+    let $preloader = this.info.params.preloader;
 
-            options.styleImg = img.getAttribute(dataAttr.styleImg);
-            imgElem.tag = "div";
-            imgElem.type = "style";
+    if ($preloader.active) {
 
-          } else if (img.hasAttribute(dataAttr.img)) {
+      if ($preloader.type != "element") {
 
-            options.img = img.getAttribute(dataAttr.img);
-            imgElem.tag = "img";
-            imgElem.type = "img";
-
-            if (img.hasAttribute(dataAttr.alt)) {
-
-              options.alt = img.getAttribute(dataAttr.alt);
-
-            }
-
-            if (img.hasAttribute(dataAttr.picture.active)) {
-
-              picture.active = true;
-              picture.element = document.createElement("picture");
-
-              if (img.hasAttribute(dataAttr.picture.rules)) {
-
-                let rules = img.getAttribute(dataAttr.picture.rules).split("; ");
-
-                if (rules) {
-
-                  for (let i = 0; i < rules.length; i++) {
-
-                    let params = rules[i].split(" ? ");
-
-                    picture.sources[i] = {
-                      element: document.createElement("source")
-                    };
-
-                    for (let item of params) {
-
-                      let parts = item.split("=");
-
-                      picture.sources[i].element.setAttribute(parts[0], parts[1]);
-
-                    }
-
-                    picture.element.appendChild(picture.sources[i].element);
-
-                  }
-
-                }
-
-              }
-
-            }
-
-          }
-
-          for (let $class of img.classList) {
-
-            if ($class != imgsClass) {
-
-              imgElem.classes.push($class);
-
-            }
-
-          }
-
-          imgElem.element = document.createElement(imgElem.tag);
-          applyClasses(imgElem.element, imgElem.classes, "add");
-
-        };
-
-      };
-
-      // End Нахождение всей информации о подгружаемой картинке
-
-      // Нахождение всех картинок при динамической подгрузке
-
-      module.findImgs = function() {
-
-        moduleInfo.imgs = findElemsClass(imgsClass, document);
-        module.getInfoImgs();
-
-      };
-
-      // End Нахождение всех картинок при динамической подгрузке
-
-      if (options.dynamic == false) {
-
-        module.getInfoImgs();
+        $preloader.el = loader.create("local", {
+          blockClasses: [$preloader.classes.block],
+          indicatorClasses: [$preloader.classes.indicator]
+        });
 
       }
 
-      module.scroll();
-      windowScroll(module.scroll);
+    }
+
+  }
+
+  __addPreloader(img) {
+
+    let $preloader = this.info.options.preloader;
+
+    if ((img && typeof img === "object") && $preloader.active) {
+
+      img.appendChild($preloader.el);
+
+    }
+
+  }
+
+  __getInfoImgs() {
+
+    let $imgs = this.info.imgs;
+    let $imgsInfo = $imgs.info;
+    let $dataAttrs = this.dataAttrs;
+
+    if ($imgs.elems) {
+
+      for (let i in $imgs.elems) {
+
+        let $img = $imgs.elems[i];
+
+        $imgsInfo[i] = {
+          block: $img,
+          img: {
+            el: null,
+            tag: null,
+            type: null,
+            classes: []
+          },
+          params: {
+            top: null,
+            height: null,
+            load: false
+          },
+          options: {
+            styleImg: ($img.getAttribute($dataAttrs.styleImg)) ? $img.getAttribute($dataAttrs.styleImg) : null,
+            img: ($img.getAttribute($dataAttrs.img)) ? $img.getAttribute($dataAttrs.img) : null,
+            alt: ($img.getAttribute($dataAttrs.alt)) ? $img.getAttribute($dataAttrs.alt) : null,
+            picture: {
+              active: ($img.getAttribute($dataAttrs.picture.active)) ? true : null,
+              el: ($img.getAttribute($dataAttrs.picture.active)) ? document.createElement("picture") : null,
+              sourses: {}
+            }
+          }
+        };
+
+        let img = $imgsInfo[i].img;
+        let params = $imgsInfo[i].params;
+        let options = $imgsInfo[i].options;
+        let picture = options.picture;
+
+        if (options.styleImg) {
+
+          img.tag = "div";
+          img.type = "style";
+
+        } else if (options.img) {
+
+          img.tag = "img";
+          img.type = "img";
+
+          if (picture.active) {
+
+            if ($img.hasAttribute($dataAttrs.picture.rules)) {
+
+              let rules = $img.getAttribute($dataAttrs.picture.rules).split("; ");
+
+              if (rules) {
+
+                for (let i in rules) {
+
+                  let params = rules[i].split(" ? ");
+
+                  picture.sourses[i] = {
+                    el: document.createElement("source");
+                  };
+
+                  for (let param of params) {
+
+                    let parts = param.split("=");
+                    picture.sourses[i].el.setAttribute(parts[0], parts[1]);
+
+                  }
+
+                  picture.el.appendChild(picture.sourses[i].el);
+
+                }
+
+              }
+
+            }
+
+          }
+
+        }
+
+        for (let $class of $img.classList) {
+
+          if ($class != $imgs.class) {
+
+            img.classes.push($class);
+
+          }
+
+        }
+
+        this.__addPreloader($img);
+        img.el = document.createElement(img.tag);
+        applyClasses(img.el, img.classes, "add");
+
+      }
+
+    }
+
+  }
+
+  __scroll() {
+
+    let $imgs = this.info.imgs;
+    let $params = this.info.params;
+    let $options = this.info.options;
+
+    if ($imgs.elems) {
+
+      $params.windowHeight = window.innerHeight;
+
+      for (let i in $imgs.info) {
+
+        let $imgInfo = $imgs.info[i];
+
+        $imgInfo.params.top = $imgInfo.block.getBoundingClientRect().top;
+        $imgInfo.params.height = $imgInfo.block.offsetHeight;
+
+        if (!$params.load && ($imgInfo.params.top - $params.windowHeight - $options.indent <= 0) && ($imgInfo.params.top + $imgInfo.params.height + $options.indent >= 0)) {
+
+          this.__loadImg($imgsInfo);
+
+        }
+
+      }
+
+    }
+
+  }
+
+  __loadImg(info) {
+
+    if (info && typeof info === "object") {
+
+      let $params = this.info.params;
+      let $helpFuncs = this.helpFuncs;
+      let img = info.img;
+      let params = info.params;
+      let options = info.options;
+      let picture = options.picture;
+      let url = options.styleImg || options.img;
+
+      params.load = "loading";
+      $helpFuncs.load(url).then(
+        function() {
+
+          let parent = info.block.parentNode;
+
+          if (img.type == "style") {
+
+            img.el.style.backgroundImage = "url(" + url + ");";
+
+          } else if (img.type == "img") {
+
+            img.el.setAttribute("src", url);
+            img.el.setAttribute("alt", options.alt);
+
+          }
+
+          if (picture.active) {
+
+            picture.el.appendChild(img.el);
+            parent.replaceChild(picture.el, info.block);
+
+          } else {
+
+            parent.replaceChild(img.el, info.block);
+
+          }
+
+          params.load = true;
+
+        },
+        function() {
+
+          params.load = "error";
+
+        }
+      );
 
     }
 
