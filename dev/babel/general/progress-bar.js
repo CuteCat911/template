@@ -1,207 +1,150 @@
 // ProgressBar - ver. 1.0.0
 
-// Description
-// * * * = * * *
-
-// Функция конструктор реализующая работу процента просмотра элемента или страницы.
-
-// Принимает в себя объект с параметрами.
-// Описание параметров:
-// 1. progressElem (обязательный) (тип string) - класс элемента, отвечающий за прогрессбар.
-// 2. observableElem (обязательный) (тип string) - класс элемента, отвечающий за наблюдаемый элемент.
-// 3. filling (не обязательный) (тип string) - тип заполнения прогрессбара.
-
-// Возможные значения параметра filling:
-// 1. width - прогрессбар будет заполняться в ширину.
-// 2. height - прогрессбар будет заполняться в высоту.
-
-// Доступные методы:
-// 1. afterProgress - выполнение функции после 100% просмотра наблюдаемого элемента.
-// Принимает в себя функцию или массив с функциями.
-
-// * * * = * * *
-// End Description
-
 import {findFirstClass} from "./find";
-import {WindowResize} from "./window-resize";
-import {WindowScroll, getWindowScroll} from "./window-scroll";
+import {windowResize} from "./window-resize";
+import {windowScroll, getWindowScroll} from "./window-scroll";
 
-export let ProgressBar = function(params) {
+export let ProgressBar = class {
 
-	if ((params.progressElem && typeof params.progressElem === "string") && (params.observableElem && typeof params.observableElem === "string")) {
+	constructor(params) {
 
-		let module = this;
-		let moduleInfo = {
-			progressElem: findFirstClass(params.progressElem, document),
-			observableElem: findFirstClass(params.observableElem, document),
-			parametrs: {
-				observable: {
-					top: null,
-					bottom: null,
-					height: null
+		if ((params.progressElem && typeof params.progressElem === "string") && (params.observableElem && typeof params.observableElem === "string")) {
+
+			let $module = this;
+
+			this.info = {
+				classes: {
+					progress: params.progressElem,
+					observable: params.observableElem
 				},
-				filling: "width",
-				windowHeight: null,
-				scroll: 0,
-				progress: 0
-			},
-			functions: []
-		};
+				elems: {
+					progress: (findFirstClass(params.progressElem, document)) ? findFirstClass(params.progressElem, document) : null,
+					observable: (findFirstClass(params.observableElem, document)) ? findFirstClass(params.observableElem, document) : null
+				},
+				params: {
+					observable: {
+						top: null,
+						bottom: null,
+						height: null
+					},
+					windowHeight: null,
+					scroll: 0,
+					progress: 0
+				},
+				options: {
+					filling: (params.filling && typeof params.filling) ? params.filling : null
+				}
+			};
+			this.helpFuncs = {
+				scroll() {
 
-		let progressElem = moduleInfo.progressElem;
-		let observableElem = moduleInfo.observableElem;
-		let parametrs = moduleInfo.parametrs;
-		let observTop = parametrs.observable.top;
-		let observBottom = parametrs.observable.bottom;
-		let observHeight = parametrs.observable.height;
-		let filling = parametrs.filling;
-		let windowHeight = parametrs.windowHeight;
-		let scroll = parametrs.scroll;
-		let progress = parametrs.progress;
-		let setObservablePosition = function(scroll) {
+					$module.__progress();
 
-			observTop = observableElem.getBoundingClientRect().top + scroll;
-			observBottom = observableElem.getBoundingClientRect().bottom + scroll;
+				},
+				resize() {
 
-		};
-
-		if (progressElem && observableElem) {
-
-			module.setParams = function() {
-
-				if (params.filling && typeof params.filling === "string") {
-
-					filling = params.filling;
+					$module.__getPosition();
 
 				}
-
-				if (filling == "width") {
-
-					progressElem.style.maxWidth = "100%";
-
-				} else if (filling == "height") {
-
-					progressElem.style.maxHeight = "100%";
-
-				}
-
 			};
 
-			module.afterProgress = function(func) {
+			let $elems = this.info.elems;
+			let $helpFuncs = this.helpFuncs;
 
-				if (func && typeof func === "function") {
+			if ($elems.progress && $elems.observable) {
 
-					moduleInfo.functions.push(func);
+				this.__setMaxSize();
+				this.getPosition();
+				windowScroll($helpFuncs.scroll);
+				windowResize($helpFuncs.resize);
 
-				} else if (func && typeof func === "object") {
-
-					for (let item of func) {
-
-						if (typeof item === "function") {
-
-							moduleInfo.functions.push(item);
-
-						}
-
-					}
-
-				} else {
-
-					console.error();
-					return false;
-
-				}
-
-			};
-
-			module.applyAfterProgress = function() {
-
-				for (let func of moduleInfo.functions) {
-
-					func();
-
-				}
-
-			};
-
-			module.getPosition = function() {
-
-				scroll = getWindowScroll();
-				observHeight = observableElem.offsetHeight;
-				setObservablePosition(scroll);
-				windowHeight = window.innerHeight;
-
-			};
-
-			module.progress = function() {
-
-				module.getPosition();
-
-				if (scroll >= observTop && scroll < observBottom) {
-
-					progress = ((scroll - observTop) / (observHeight + observTop - windowHeight)) * 100;
-
-					if (progress >= 100) {
-
-						if (filling == "width") {
-
-							progressElem.style.width = "100%";
-
-						} else if (filling == "height") {
-
-							progressElem.style.height = "100%";
-
-						}
-					
-						module.applyAfterProgress();
-
-					} else {
-
-						if (filling == "width") {
-
-							progressElem.style.width = progress + "%";
-
-						} else if (filling == "height") {
-
-							progressElem.style.height = progress + "%";
-
-						}
-
-					}
-
-				} else if (scroll < observTop) {
-
-					if (filling == "width") {
-
-						progressElem.style.width = "";
-
-					} else if (filling == "height") {
-
-						progressElem.style.height = "";
-
-					}
-
-				}
-
-			};
-
-			module.setParams();
-			module.getPosition();
-
-			let windowScroll = new WindowScroll(module.progress);
-			let windowResize = new WindowResize(module.getPosition);
-
-		} else {
-
-			console.error();
-			return false;
+			}
 
 		}
 
-	} else {
+	}
 
-		console.error();
-		return false;
+	__setMaxSize() {
+
+		if (this.info.options.filling == "width") {
+
+			this.info.elems.progress.style.maxWidth = "100%";
+
+		} else if (this.info.options.filling == "height") {
+
+			this.info.elems.progress.style.maxHeight = "100%";
+
+		}
+
+	}
+
+	__getPosition() {
+
+		let $elems = this.info.elems;
+		let $params = this.info.params;
+
+		$params.scroll = getWindowScroll();
+		$params.observable.top = $elems.observable.getBoundingClientRect().top + $params.scroll;
+		$params.observable.bottom = $elems.observable.getBoundingClientRect().bottom + $params.scroll;
+		$params.observable.height = $elems.observable.offsetHeight;
+		$params.windowHeight = window.innerHeight;
+
+	}
+
+	__progress() {
+
+		let $elems = this.info.elems;
+		let $params = this.info.params;
+		let $scroll = $params.scroll;
+		let $top = $params.observable.top;
+		let $bottom = $params.observable.bottom;
+		let $filling = this.info.options.filling;
+
+		this.__getPosition();
+
+		if ($scroll > $top && $scroll < $bottom) {
+
+			$params.progress = (($scroll - $top) / ($params.observable.height + $top - $params.windowHeight)) * 100;
+
+			if ($params.progress >= 0) {
+
+				if ($filling == "width") {
+
+					$elems.progress.style.width = "100%";
+
+				} else if ($filling == "height") {
+
+					$elems.progress.style.height = "100%";
+
+				}
+
+			} else {
+
+				if ($filling == "width") {
+
+					$elems.progress.style.width = progress = "%";
+
+				} else if ($filling == "height") {
+
+					$elems.progress.style.height = progress = "%";
+
+				}
+
+			}
+
+		} else if ($scroll < $top) {
+
+			if ($filling == "width") {
+
+				$elems.progress.style.width = "";
+
+			} else if ($filling == "height") {
+
+				$elems.progress.style.height = "";
+
+			}
+
+		}
 
 	}
 
