@@ -1,4 +1,4 @@
-// GoToSection - ver 1.0.0
+// GoToSection - ver 1.1.0
 
 import {findElemsClass, findFirstClass} from "./find";
 import {findCurrentParent} from "./find-current-parent";
@@ -132,6 +132,7 @@ export let GoToSection = class {
 
           if ($sectionElem.getAttribute($dataAttrs.section) == sectionName) {
 
+            this.__applyFuncs(sectionName, "before");
             top += parseInt($sectionElem.getBoundingClientRect().top);
 
             if ($header.el) {
@@ -174,7 +175,112 @@ export let GoToSection = class {
 
             }
 
+            this.__applyFuncs(sectionName, "after");
+
           }
+
+        }
+
+      }
+
+    }
+
+  }
+
+  addFuncs(funcs, event, sectionsName) {
+
+    if (funcs && (event && typeof event === "string")) {
+
+      let $funcs = this.info.funcs;
+      let sectionsNameArray = [];
+      let addSectionName = function() {
+
+        if (sectionsName === "string") {
+
+          sectionsNameArray.push(sectionsName);
+
+        } else if (Array.isArray(sectionsName)) {
+
+          for (let sectionName of sectionsName) {
+
+            if (typeof sectionName === "string") {
+
+              sectionsNameArray.push(sectionName);
+
+            }
+
+          }
+
+        }
+
+      };
+
+      if (typeof funcs === "function") {
+
+        if (sectionsName) {
+
+          addSectionName();
+          $funcs[event].push([funcs, sectionsNameArray]);
+
+
+        } else {
+
+          $funcs[event].push(funcs);
+
+        }
+
+      } else if (Array.isArray(funcs)) {
+
+        for (let func of funcs) {
+
+          if (typeof func === "function") {
+
+            if (sectionsName) {
+
+              addPopupsName();
+              $funcs[event].push([func, sectionsNameArray]);
+
+            } else {
+
+              $funcs[event].push(func);
+
+            }
+
+          }
+
+        }
+
+      }
+
+    }
+
+  }
+
+  __applyFuncs(sectionName, event) {
+
+    let $funcs = this.info.funcs;
+
+    if ($funcs[event] && $funcs[event].length != 0) {
+
+      for (let item of $funcs[event]) {
+
+        if (item.length == 2) {
+
+          for (let section of item[1]) {
+
+            if (section == sectionName) {
+
+              let func = item[0];
+
+              func();
+
+            }
+
+          }
+
+        } else {
+
+          item();
 
         }
 
