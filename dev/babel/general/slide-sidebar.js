@@ -1,407 +1,330 @@
 // SlideSidebar - ver 1.0.0
 
-// Description
-// * * * = * * *
-
-// Функция конструктор реализующая функционал скользящих sidebar-ов.
-
-// Принимает в себя объект с параметрами.
-// Описание параметров:
-// 1. sidebarWrapper (обязательный) (тип string) - класс элементов обертки для сайдбара (может быть несколько)
-// 2. sidebar (обязательный) (тип string) - класс сайдбаров (для корректной работы должны находиться в своих обертках (sidebarWrapper))
-// 3. content (обязательный) (тип string) - класс элемента контента, по высоте которого будет происходить скольжение сайдбара(ов)
-// 4. indentTop (не обязательный) (тип number) - отступ для всех сайдбаров сверху
-// 5. indentBottom (не обязательный) (тип number) - отступ для всех сайдбаров снизу
-// 6. minWidth (не обязательный) (тип number) - минимальная ширина при которой функционал перестает работать
-
-// Пример объекта с параметрами:
-// {
-//   sidebarWrapper: "content-aside",
-//   sidebar: "aside",
-//   content: "content",
-//   indentTop: 200,
-//   indentBottom: 20,
-//   minWidth: 1024
-// };
-
-// Доступные атрибуты:
-// 1. data-indent-top - задает для определенного сайдбара отступ сверху.
-// 2. data-indent-bottom - задает для определенного сайдбара отступ снизу.
-
-// Описание функционала скользящих sidebar-ов.
-// Одновременно работать могут до нескольких сайдбаров. Главное условие чтобы каждый сайдбар был в своей обертке и на старнице был один элемент с контентом.
-
-// * * * = * * *
-// End Description
-
 import {findFirstClass, findElemsClass} from "./find";
 import {getWindowScroll, windowScroll} from "./window-scroll";
 import {applyStyle} from "./apply-style";
 import {windowResize} from "./window-resize";
 
-export let SlideSidebar = function(params) {
+export let SlideSidebar = class {
 
-  if ((params.sidebarWrapper && typeof params.sidebarWrapper === "string") && (params.sidebar && typeof params.sidebar === "string") && (params.content && typeof params.content === "string")) {
+  constructor(params) {
 
-    let module = this;
-    let moduleInfo = {
-      elems: {
-        sidebarWrapper: findElemsClass(params.sidebarWrapper, document),
-        sidebar: findElemsClass(params.sidebar, document),
-        content: findFirstClass(params.content, document)
-      },
-      classes: {
-        sidebarWrapper: params.sidebarWrapper,
-        sidebar: params.sidebar,
-        content: params.content
-      },
-      sidebarsInfo: {
+    if ((params.sidebarWrapper && typeof params.sidebarWrapper === "string") && (params.sidebar && typeof params.sidebar === "string") && (params.content && typeof params.content === "string")) {
 
-      },
-      options: {
-        indent: {
-          top: 0,
-          bottom: 0
+      let $module = this;
+
+      this.info = {
+        classes: {
+          sidebarWrapper: params.sidebarWrapper,
+          sidebar: params.sidebar,
+          content: params.content
+        },
+        elems: {
+          sidebarWrapper: (findElemsClass(params.sidebarWrapper, document)) ? findElemsClass(params.sidebarWrapper, document) : null,
+          sidebar: (findElemsClass(params.sidebar, document)) ? findElemsClass(params.sidebar, document) : null,
+          content: (findFirstClass(params.content, document)) ? findFirstClass(params.content, document) : null
+        },
+        sidebarsInfo: {},
+        params: {
+          indent: {
+            top: (params.indentTop <= 0 || params.indentTop >= 0) ? params.indentTop : 10,
+            bottom: (params.indentBottom <= 0 || params.indentBottom >= 0) ? params.indentBottom : 10
+          }
         },
         windowWidth: null,
         contentHeight: null,
-        minWidth: null
-      }
-    };
-    let dataAttr = {
-      indent: {
-        top: "data-indent-top",
-        bottom: "data-indent-bottom"
-      }
-    };
-    let styles = {
-      fixed: {
-        top: {
-          marginTop: "",
-          position: "fixed",
-          top: "",
-          width: ""
+        minWidth: (params.minWidth > 0) ? params.minWidth : null
+      };
+      this.dataAttrs = {
+        indent: {
+          top: "data-indent-top",
+          bottom: "data-indent-bottom"
+        }
+      };
+      this.styles = {
+        fixed: {
+          top: {
+            marginTop: "",
+            position: "fixed",
+            top: "",
+            width: ""
+          },
+          bottom: {
+            position: "fixed",
+            bottom: "",
+            width: ""
+          }
         },
-        bottom: {
-          position: "fixed",
+        static: {
+          marginTop: "",
+          position: "static",
+          top: "",
           bottom: "",
           width: ""
         }
-      },
-      static: {
-        marginTop: "",
-        position: "static",
-        top: "",
-        bottom: "",
-        width: ""
+      };
+      this.helpFuncs = {
+        scroll() {
+
+          $module.__slide();
+
+        },
+        resize() {
+
+          $module.__getSidebarsInfo();
+
+          if ($module.info.params.windowWidth <= $module.info.params.minWidth) {
+
+            $module.__clear();
+
+          }
+
+        }
+      };
+
+      let $elems = this.info.elems;
+      let $helpFuncs = this.helpFuncs;
+
+      if ($elems.sidebarWrapper && $elems.sidebar && $elems.content) {
+
+        this.__getSidebarsInfo();
+        windowScroll($helpFuncs.scroll);
+        windowResize($helpFuncs.resize);
+
       }
-    };
 
-    // Сокращение часто используемых частей объекта moduleInfo
+    }
 
-    let elems = moduleInfo.elems;
-    let classes = moduleInfo.classes;
-    let sidebarsInfo = moduleInfo.sidebarsInfo;
-    let options = moduleInfo.options;
+  }
 
-    // End Сокращение часто используемых частей объекта moduleInfo
+  __setSizes() {
 
-    if (elems.sidebarWrapper && elems.sidebar && elems.content) {
+    this.info.params.windowWidth = window.innerWidth;
+    this.info.params.contentHeight = this.info.elems.content.offsetHeight;
 
-      // Функция установки дефолтных или пользовательских параметров
+  }
 
-      module.setParams = function() {
+  __getSidebarsInfo() {
 
-        if (params.indentTop && typeof params.indentTop === "number") {
+    let $classes = this.info.classes;
+    let $elems = this.info.elems;
+    let $params = this.info.params;
+    let $sidebarsInfo = this.info.sidebarsInfo;
+    let $dataAttrs = this.dataAttrs;
 
-          options.indent.top = Math.abs(params.indentTop);
+    this.__setSizes();
 
-        };
+    for (let i in $elems.sidebarWrapper) {
 
-        if (params.indentBottom && typeof params.indentBottom === "number") {
+      let $wrapper = $elems.sidebarWrapper[i];
 
-          options.indent.bottom = Math.abs(params.indentBottom);
-
-        };
-
-        if (params.minWidth && typeof params.minWidth === "number") {
-
-          options.minWidth = Math.abs(params.minWidth);
-
-        };
-
+      $sidebarsInfo[i] = {
+        wrapper: $wrapper,
+        sidebar: findFirstClass($classes.sidebar, $wrapper),
+        params: {
+          indent: {
+            top: null,
+            bottom: null
+          },
+          margin: {
+            top: null
+          },
+          width: null,
+          height: null,
+          offset: null,
+          position: {
+            top: null,
+            bottom: null
+          },
+          lastScroll: 0
+        }
       };
 
-      // End Функция установки дефолтных или пользовательских параметров
+      let sidebar = $sidebarsInfo[i].sidebar;
 
-      // Функция установки размеров ширины окна и высоты контента
+      if (sidebar) {
 
-      module.setSizes = function() {
+        for (let i in $params.indent) {
 
-        options.windowWidth = window.innerWidth;
-        options.contentHeight = elems.content.offsetHeight;
+          let size = sidebar.getAttribute($dataAttrs.indent[i]);
 
-      };
+          if (+size <= 0 || +size >= 0) {
 
-      // End Функция установки размеров ширины окна и высоты контента
+            $sidebarsInfo[i].params.indent[i] = +size;
 
-      // Функция сбора всей информации по сайдбару
+          } else {
 
-      module.setSidebarsInfo = function() {
+            $sidebarsInfo[i].params.indent[i] = $params.indent[i];
 
-        for (let i = 0; i < elems.sidebarWrapper.length; i++) {
+          }
 
-          let wrapper = elems.sidebarWrapper[i];
+        }
 
-          sidebarsInfo[i] = {
-            wrapper: wrapper,
-            sidebar: findFirstClass(classes.sidebar, wrapper),
-            options: {
-              indent: {
-                top: null,
-                bottom: null
-              },
-              marginTop: null,
-              width: null,
-              height: null,
-              offset: null,
-              position: {
-                top: null,
-                bottom: null
-              },
-              lastScroll: 0
+      }
+
+    }
+
+  }
+
+  __slide() {
+
+    let $elems = this.info.elems;
+    let $params = this.info.params;
+    let $sidebarsInfo = this.info.sidebarsInfo;
+    let $styles = this.styles;
+
+    if ($params.minWidth && $params.windowWidth >= $params.minWidth || !$params.minWidth) {
+
+      let scroll = getWindowScroll();
+      let windowHeight = window.innerHeight;
+      let startLine = $elems.content.getBoundingClientRect().top + scroll;
+
+      for (let i in $sidebarsInfo) {
+
+        let info = $sidebarsInfo[i];
+        let sidebar = $sidebarsInfo[i].sidebar;
+        let params = info.params;
+        let contentHeight = $params.contentHeight;
+
+        params.margin.top = parseFloat(window.getComputedStyle(sidebar).marginTop);
+        params.width = sidebar.offsetWidth;
+        params.height = sidebar.offsetHeight;
+        params.offset = sidebar.getBoundingClientRect().top + scroll;
+        info.wrapper.style.height = contentHeight + "px";
+
+        let marginTop = params.margin.top;
+        let top = params.indent.top;
+        let bottom = params.indent.bottom;
+        let width = params.width;
+        let height = params.height;
+        let offset = params.offset;
+
+        if (height < contentHeight || $params.windowWidth > $params.minWidth) {
+
+          $styles.fixed.top.top = params.indent.top + "px";
+          $styles.fixed.top.width = width + "px";
+          $styles.fixed.bottom.bottom = params.indent.bottom = "px";
+          $styles.fixed.bottom.width = width + "px";
+
+          if (scroll > params.lastScroll) {
+
+            if (height <= windowHeight) {
+
+              if (scroll >= startLine - top) {
+
+                applyStyle(sidebar, $styles.fixed.top, "add");
+
+              }
+
+              if (scroll + windowHeight >= startLine + contentHeight - top + (windowHeight - height)) {
+
+                $styles.static.marginTop = contentHeight - height + "px";
+                applyStyle(sidebar, $styles.static, "add");
+
+              }
+
+            } else {
+
+              if (scroll >= startLine + height + bottom - windowHeight && marginTop == 0) {
+
+                params.position.bottom = "active";
+                applyStyle(sidebar, $styles.fixed.bottom, "add");
+
+              }
+
+              if (scroll + windowHeight >= startLine + contentHeight + bottom && marginTop == 0) {
+
+                params.position.bottom = null;
+                $styles.static.marginTop = contentHeight - height + "px";
+                applyStyle(sidebar, $styles.static, "add");
+
+              }
+
+              if (scroll >= offset - top && params.position.top == "active") {
+
+                params.position.top == null;
+                $styles.static.marginTop = offset - startLine + "px";
+                applyStyle(sidebar, $styles.static, "add");
+
+              }
+
+              if (scrll >= offset + height + bottom - windowHeight && scroll + windowHeight < startLine + contentHeight && marginTop >= 1) {
+
+                params.position.bottom = "active";
+                $styles.fixed.bottom.marginTop = "";
+                applyStyle(sidebar, $styles.fixed.bottom, "add");
+
+              }
+
             }
-          };
 
-          if (sidebarsInfo[i].sidebar) {
+          } else {
 
-            for (let item of ["top", "bottom"]) {
+            if (height <= windowHeight) {
 
-              let position = sidebarsInfo[i].sidebar.getAttribute(dataAttr.indent[item]);
+              if (scroll <= startLine - top) {
 
-              if (position && (typeof +position === "number") && (position <= 0 || position >= 0)) {
+                $styles.static.marginTop = "";
+                applyStyle(sidebar, $styles.static, "add");
 
-                sidebarsInfo[i].options.indent[item] = +position;
+              }
 
-              } else {
+              if (scroll + windowHeight <= startLine + contentHeight - top + (windowHeight - height) && scroll > startLine - top) {
 
-                sidebarsInfo[i].options.indent[item] = options.indent[item];
+                applyStyle(sidebar, $styles.fixed.top, "add");
 
-              };
+              }
 
-            };
+            } else {
 
-          };
+              if (scroll + top <= offset) {
 
-        };
+                params.position.top = "active";
+                applyStyle(sidebar, $styles.fixed.top, "add");
 
-      };
+              }
 
-      // End Функция сбора всей информации по сайдбару
+              if (scroll + top <= startLine) {
 
-      // Функция скольжения сайдбара
+                params.position.top = null;
+                $styles.static.marginTop = "";
+                applyStyle(sidebar, $styles.static, "add");
 
-      module.slide = function() {
+              }
 
-        if ((options.minWidth && options.windowWidth >= options.minWidth) || !options.minWidth) {
+              if (params.position.bottom == "active") {
 
-          let scroll = getWindowScroll();
-          let windowHeight = window.innerHeight;
-          let startLine = elems.content.getBoundingClientRect().top + scroll;
+                params.position.bottom = null;
+                $styles.static.marginTop = offset - startLine + "px";
+                applyStyle(sidebar, $styles.static, "add");
 
-          for (let i in sidebarsInfo) {
+              }
 
-            let info = sidebarsInfo[i];
-            let sidebar = info.sidebar;
-            let $options = info.options; // Локальные опции сайдбара
-            let top = $options.indent.top;
-            let bottom = $options.indent.bottom;
-            let position = $options.position;
-            let contentHeight = options.contentHeight;
+            }
 
-            $options.marginTop = parseFloat(window.getComputedStyle(sidebar).marginTop);
-            $options.width = sidebar.offsetWidth;
-            $options.height = sidebar.offsetHeight;
-            $options.offset = sidebar.getBoundingClientRect().top + scroll;
-            info.wrapper.style.height = options.contentHeight + "px";
+          }
 
-            let marginTop = $options.marginTop;
-            let width = $options.width;
-            let height = $options.height;
-            let offset = $options.offset;
+          params.lastScroll = scroll;
 
-            if (height <= contentHeight || options.windowWidth >= options.minWidth) {
+        }
 
-              let $fixed = styles.fixed;
-              let $static = styles.static;
+      }
 
-              $fixed.top.top = top + "px";
-              $fixed.top.width = width + "px";
-              $fixed.bottom.bottom = bottom + "px";
-              $fixed.bottom.width = width + "px";
+    }
 
-              if (scroll > $options.lastScroll) { // Скролл вниз
+  }
 
-                if (height <= windowHeight) { // Высота сайдбара меньше высоты экрана
+  __clear() {
 
-                  if (scroll >= startLine - top) {
+    let $sidebarsInfo = this.info.sidebarsInfo;
 
-                    applyStyle(sidebar, $fixed.top, "add");
+    for (let i in $sidebarsInfo) {
 
-                  };
+      this.styles.static.marginTop = "";
+      applyStyle($sidebarsInfo[i].sidebar, this.styles.static, "add");
 
-                  if (scroll + windowHeight >= startLine + contentHeight - top + (windowHeight - height)) {
+    }
 
-                    $static.marginTop = contentHeight - height + "px";
-                    applyStyle(sidebar, $static, "add");
-
-                  };
-
-                } else { // Высота сайдбара больше высоты экрана
-
-                  if (scroll >= startLine + height + bottom - windowHeight && marginTop == 0) {
-
-                    position.bottom = "active";
-                    applyStyle(sidebar, $fixed.bottom, "add");
-
-                  };
-
-                  if (scroll + windowHeight >= startLine + contentHeight + bottom && marginTop == 0) {
-
-                    position.bottom = null;
-                    $static.marginTop = contentHeight - height + "px";
-                    applyStyle(sidebar, $static, "add");
-
-                  };
-
-                  if (scroll >= offset - top && position.top == "active") {
-
-                    position.top = null;
-                    $static.marginTop = offset - startLine + "px";
-                    applyStyle(sidebar, $static, "add");
-
-                  };
-
-                  if (scroll >= offset + height + bottom - windowHeight && scroll + windowHeight < startLine + contentHeight && marginTop >= 1) {
-
-                    position.bottom = "active";
-                    $fixed.bottom.marginTop = "";
-                    applyStyle(sidebar, $fixed.bottom, "add");
-
-                  };
-
-                };
-
-              } else { // Скролл вверх
-
-                if ($options.height <= windowHeight) { // Высота сайдбара меньше высоты экрана
-
-                  if (scroll <= startLine - top) {
-
-                    $static.marginTop = "";
-                    applyStyle(sidebar, $static, "add");
-
-                  };
-
-                  if (scroll + windowHeight <= startLine + contentHeight - top + (windowHeight - height) && scroll > startLine - top) {
-
-                    applyStyle(sidebar, $fixed.top, "add");
-
-                  };
-
-                } else { // Высота сайдбара больше высоты экрана
-
-                  if (scroll + top <= offset) {
-
-                    position.top = "active";
-                    applyStyle(sidebar, $fixed.top, "add");
-
-                  };
-
-                  if (scroll + top <= startLine) {
-
-                    position.top = null;
-                    $static.marginTop = "";
-                    applyStyle(sidebar, $static, "add");
-
-                  };
-
-                  if (position.bottom == "active") {
-
-                    position.bottom = null;
-                    $static.marginTop = offset - startLine + "px";
-                    applyStyle(sidebar, $static, "add");
-
-                  };
-
-                };
-
-              };
-
-              $options.lastScroll = scroll;
-
-            };
-
-          };
-
-        };
-
-      };
-
-      // End Функция скольжения сайдбара
-
-      // Функция очистки стилей сайдбаров
-
-      module.clear = function() {
-
-        for (let i in sidebarsInfo) {
-
-          let info = sidebarsInfo[i];
-          let sidebar = info.sidebar;
-          let $static = styles.static;
-
-          $static.marginTop = "";
-          applyStyle(sidebar, $static, "add");
-
-        };
-
-      };
-
-      // End Функция очистки стилей сайдбаров
-
-      // Функция отрабатывающая при ресайзе окна
-
-      module.resize = function() {
-
-        module.setSizes();
-        module.setSidebarsInfo();
-
-        if (options.windowWidth <= options.minWidth) {
-
-          module.clear();
-
-        };
-
-      };
-
-      // End Функция отрабатывающая при ресайзе окна
-
-      module.setParams();
-      module.setSizes();
-      module.setSidebarsInfo();
-      windowScroll(module.slide);
-      windowResize(module.resize);
-
-    } else {
-
-      console.error();
-
-    };
-
-  } else {
-
-    console.error();
-
-  };
+  }
 
 };
