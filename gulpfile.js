@@ -5,7 +5,8 @@ const conf = {
     gulp: require("gulp"),
     browserSync: require("browser-sync"),
     notify: require("gulp-notify"),
-    rename: require("gulp-rename")
+    rename: require("gulp-rename"),
+    merge: require("merge-stream")
   },
   css: {
     stylus: require("gulp-stylus"),
@@ -28,6 +29,9 @@ const conf = {
     plumber: require("gulp-plumber"),
     cheerio: require("gulp-cheerio"),
     replace: require("gulp-replace")
+  },
+  img: {
+    sprite: require("gulp.spritesmith")
   }
 };
 const NODE_ENV = process.env.NODE_ENV || "dev";
@@ -75,9 +79,9 @@ const funcs = {
       for (let i in tasks) {
         if (tasks[i] && typeof tasks[i] === "function") {
           if (i == "normal") {
-            gulp.task(i, ["localhost", "pages", "stylus", "cssLibs", "scripts", "scriptsLibs", "svg"], tasks[i]);
+            gulp.task(i, ["localhost", "pages", "stylus", "cssLibs", "scripts", "scriptsLibs", "svg", "img"], tasks[i]);
           } else if (i == "without") {
-            gulp.task(i, ["localhost", "pages", "stylus", "cssLibs", "svg"], tasks[i]);
+            gulp.task(i, ["localhost", "pages", "stylus", "cssLibs", "svg", "img"], tasks[i]);
           } else if (i == "only") {
             gulp.task(i, ["localhost", "scripts", "scriptsLibs"], tasks[i]);
           } else if (i == "debug") {
@@ -115,13 +119,13 @@ const tasks = {
                 .on("error", conf.default.notify.onError())
                 .pipe(conf.css.sourceMaps.write())
                 .pipe(conf.css.autoprefixer(["last 15 versions", "> 1%"], {cascade: true}))
-                .pipe(gulp.dest("css"))
+                .pipe(gulp.dest("css/"))
                 .pipe(conf.default.browserSync.reload({stream: true}));
     },
     cssLibs: function() {
       return gulp.src("dev/libs/css/**/*.css")
                 .pipe(conf.css.concat("libs.css"))
-                .pipe(gulp.dest("css"))
+                .pipe(gulp.dest("css/"))
                 .pipe(conf.default.browserSync.reload({stream: true}));
     }
   },
@@ -208,8 +212,22 @@ const tasks = {
                 .on("error", function(error) {
                   console.log(error);
                 })
-                .pipe(gulp.dest("sprites"))
+                .pipe(gulp.dest("sprites/"))
                 .pipe(conf.default.browserSync.reload({stream: true}));
+    },
+    img: function() {
+      let sprite = gulp.src("sprites/png/*.png")
+                      .pipe(conf.img.sprite({
+                        imgName: "png-sprite.png",
+                        cssName: "sprite.styl",
+                        cssFormat: "stylus",
+                        algorithm: "binary-tree",
+                        cssTemplate: "sprites/conf/stylus.template.mustache"
+                      }));
+      let imgStream = sprite.img.pipe(gulp.dest("sprites/"));
+      let cssStream = sprite.css.pipe(gulp.dest("dev/styl/general/"));
+      
+      return conf.default.merge(imgStream, cssStream);
     }
   },
   watch: {
@@ -219,6 +237,7 @@ const tasks = {
       gulp.watch("dev/libs/css/**/*.css", ["cssLibs"]);
       gulp.watch("dev/libs/js/*.js", ["scriptsLibs"]);
       gulp.watch("sprites/svg/*.svg", ["svg"]);
+      gulp.watch("sprites/png/*.png"), ["img"];
     },
     js: {
       without: function() {
@@ -226,6 +245,7 @@ const tasks = {
         gulp.watch("dev/styl/**/*.styl", ["stylus"]);
         gulp.watch("dev/libs/css/**/*.css", ["cssLibs"]);
         gulp.watch("sprites/svg/*.svg", ["svg"]);
+        gulp.watch("sprites/png/*.png"), ["img"];
       },
       only: function() {
         gulp.watch("dev/libs/js/*.js", ["scriptsLibs"]);
