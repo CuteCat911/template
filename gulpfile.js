@@ -10,6 +10,7 @@ const conf = {
   },
   css: {
     stylus: require("gulp-stylus"),
+    lint: require("gulp-stylint"),
     autoprefixer: require("gulp-autoprefixer"),
     sourceMaps: require("gulp-sourcemaps"),
     cssNano: require("gulp-cssnano"),
@@ -127,6 +128,13 @@ const tasks = {
                 .pipe(conf.css.concat("libs.css"))
                 .pipe(gulp.dest("css/"))
                 .pipe(conf.default.browserSync.reload({stream: true}));
+    },
+    stylusLint: function() {
+      return gulp.src("dev/styl/**/*.styl")
+                .pipe(conf.css.lint({
+                  config: ".stylintrc"
+                }))
+                .pipe(conf.css.lint.reporter());
     }
   },
   html: {

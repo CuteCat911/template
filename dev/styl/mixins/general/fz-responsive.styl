@@ -3,7 +3,7 @@ fz-responsive(fzMin, fzMid, fzMax, widthMin, widthMid, widthMax, min)
     font-size s("calc(%s + (100vw - %s) * %s)", fzMid, widthMid, round(unit((fzMax - fzMid) / (widthMax - widthMid), ""), 6))
   
   @media (min-width widthMin) and (max-width widthMid)
-    font-size s("calc(%s + (100vw - %s) * %s)", fzMin, widthMin, round(unit((fzMid - fzMin) / (widthMid - widthMin), ""), 6)) 
+    font-size s("calc(%s + (100vw - %s) * %s)", fzMin, widthMin, round(unit((fzMid - fzMin) / (widthMid - widthMin), ""), 6))
 
   if min == true
     @media (max-width widthMin)
