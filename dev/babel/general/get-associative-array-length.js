@@ -6,11 +6,15 @@ export let getAssociativeArrayLength = function(associativeArray) {
 
     let length = 0;
 
+    /* eslint-disable */
+
     for (let i in associativeArray) {
 
       length++;
 
     }
+
+    /* eslint-enable */
 
     return length;
 

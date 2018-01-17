@@ -9,7 +9,7 @@ export let scrollTo = function(params) {
     let info = {
       position: params.position,
       fps: (params.fps > 0) ? params.fps : 60,
-      speed: (params.speed > 0) ? params.speed ? 1.5,
+      speed: (params.speed > 0) ? params.speed : 1.5,
       calibration: (!params.calibration && typeof params.calibration === "boolean") ? params.calibration : true,
       params: {
         startScroll: getWindowScroll(),
@@ -52,7 +52,7 @@ export let scrollTo = function(params) {
               window.cancelAnimationFrame(idScroll);
               calibration();
 
-            };
+            }
 
           } else if (params.mode == "bottom") {
 
@@ -63,7 +63,7 @@ export let scrollTo = function(params) {
               window.cancelAnimationFrame(idScroll);
               calibration();
 
-            };
+            }
 
           }
 

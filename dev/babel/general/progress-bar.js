@@ -122,11 +122,11 @@ export let ProgressBar = class {
 
 				if ($filling == "width") {
 
-					$elems.progress.style.width = progress = "%";
+					$elems.progress.style.width = $params.progress = "%";
 
 				} else if ($filling == "height") {
 
-					$elems.progress.style.height = progress = "%";
+					$elems.progress.style.height = $params.progress = "%";
 
 				}
 

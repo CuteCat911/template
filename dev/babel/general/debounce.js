@@ -5,23 +5,23 @@ const FROZE = 1;
 
 export let debounce = function(func, time = 300) {
 
-	if (func && typeof func === "function") {
+  if (func && typeof func === "function") {
 
-		if (state) {
+    if (state) {
 
-			return;
+      return;
 
-		}
+    }
 
-		func.apply(this, arguments);
-		state = FROZE;
+    func.apply(this, arguments);
+    state = FROZE;
 
-		setTimeout(function() {
+    setTimeout(function() {
 
-			state = null;
+      state = null;
 
-		}, time);
+    }, time);
 
-	}
+  }
 
 };

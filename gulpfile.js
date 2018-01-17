@@ -23,7 +23,8 @@ const conf = {
     webpackStream: require("webpack-stream"),
     named: require("vinyl-named"),
     uglify: require("gulp-uglify"),
-    uglifyWebpack: require("uglifyjs-webpack-plugin")
+    uglifyWebpack: require("uglifyjs-webpack-plugin"),
+    linter: require("gulp-eslint")
   },
   svg: {
     sprite: require("gulp-svg-sprite"),
@@ -65,8 +66,7 @@ const webpackOptions = {
     new webpack.optimize.CommonsChunkPlugin({
       name: "common",
       minChunks: 4
-    }),
-    new conf.js.uglifyWebpack()
+    })
   ]
 };
 const funcs = {
@@ -190,6 +190,14 @@ const tasks = {
       return gulp.src("dev/libs/js/*.js")
                 .pipe(gulp.dest("js/libs"))
                 .pipe(conf.default.browserSync.reload({stream: true}));
+    },
+    scriptsLint: function() {
+      return gulp.src("dev/babel/**/*.js")
+                .pipe(conf.js.linter({
+                  configFile: ".eslintrc"
+                }))
+                .pipe(conf.js.linter.format())
+                .pipe(conf.js.linter.failAfterError());
     }
   },
   sprites: {

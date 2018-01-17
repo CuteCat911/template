@@ -2,7 +2,7 @@
 
 // getWindowScroll - ver. 1.0.0
 
-export let getWindowScroll = function() {
+export const getWindowScroll = function() {
 
   let scroll = window.pageYOffset || document.documentElement.scrollTop;
 
@@ -12,7 +12,7 @@ export let getWindowScroll = function() {
 
 // getScrollHeight - ver 1.0.1
 
-export let getDocumentHeight = function() {
+export const getDocumentHeight = function() {
 
   let height = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight, document.body.offsetHeight, document.documentElement.offsetHeight, document.body.clientHeight, document.documentElement.clientHeight);
 
@@ -28,11 +28,11 @@ let eventArray = [];
 
 export let windowScroll = function(funcs) {
 
-	if (funcs && typeof funcs === "function") {
+  if (funcs && typeof funcs === "function") {
 
-		eventArray.push(funcs);
+    eventArray.push(funcs);
 
-	} else if (funcs && Array.isArray(funcs)) {
+  } else if (funcs && Array.isArray(funcs)) {
 
     for (let func of funcs) {
 

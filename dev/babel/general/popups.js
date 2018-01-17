@@ -547,7 +547,6 @@ export let Popups = class {
 
     let $elems = this.info.elems;
     let $options = this.info.options;
-    let $params = this.info.params;
     let $styles = this.styles;
 
     for (let i in $elems) {

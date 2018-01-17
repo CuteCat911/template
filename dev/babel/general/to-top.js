@@ -100,7 +100,7 @@ export let ToTop = class {
     scrollTo({
       position: 0,
       fps: info.fps,
-      speed: info.speed;
+      speed: info.speed
     });
 
   }
@@ -115,11 +115,11 @@ export let ToTop = class {
       let scroll = getWindowScroll();
       let indent;
 
-      if (typeof $hide.indent === "number") {
+      if ($hide.indent === "number") {
 
         indent = $hide.indent;
 
-      } else if (typeof $hide.indent.split("X")[0] === "screen") {
+      } else if ($hide.indent.split("X")[0] === "screen") {
 
         let factor = ($hide.indent.split("X")[1] > 1) ? $hide.indent.split("X")[1] : 1;
 

@@ -1,22 +1,24 @@
+/* global ActiveXObject */
+
 // getXmlHttp - ver. 1.0.0
 
 export let getXmlHttp = function() {
 
-	let xmlHttp;
+  let xmlHttp;
 
-	try {
+  try {
 
     xmlHttp = new ActiveXObject("Msxml2.XMLHTTP");
 
-  } catch(e) {
+  } catch (e) {
 
     try {
 
-      xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");
+        xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");
 
-    } catch(E) {
+    } catch (E) {
 
-      xmlHttp = false;
+        xmlHttp = false;
 
     }
 
@@ -36,29 +38,29 @@ export let getXmlHttp = function() {
 
 export let serialize = function(type, data) {
 
-	if ((type == "POST" || type == "GET") && (data && typeof data === "object")) {
+  if ((type == "POST" || type == "GET") && (data && typeof data === "object")) {
 
-		let serializeData;
+    let serializeData;
     let serializeArray = [];
 
     for (let key in data) {
 
-    	let str = key + "=" + encodeURIComponent(data[key]);
+      let str = key + "=" + encodeURIComponent(data[key]);
 
-    	serializeArray.push(str);
+      serializeArray.push(str);
 
     }
 
     serializeData = serializeArray.join("&");
 
-		if (type == "GET") {
+    if (type == "GET") {
 
-			serializeData = "?" + serializeData;
+      serializeData = "?" + serializeData;
 
-		}
+    }
 
     return serializeData;
 
-	}
+  }
 
 };

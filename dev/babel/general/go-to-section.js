@@ -237,7 +237,7 @@ export let GoToSection = class {
 
             if (sectionsName) {
 
-              addPopupsName();
+              addSectionName();
               $funcs[event].push([func, sectionsNameArray]);
 
             } else {

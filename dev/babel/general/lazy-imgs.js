@@ -175,7 +175,6 @@ export let LazyImgs = class {
         };
 
         let img = $imgsInfo[i].img;
-        let params = $imgsInfo[i].params;
         let options = $imgsInfo[i].options;
         let picture = options.picture;
 
@@ -202,7 +201,7 @@ export let LazyImgs = class {
                   let params = rules[i].split(" ? ");
 
                   picture.sourses[i] = {
-                    el: document.createElement("source");
+                    el: document.createElement("source")
                   };
 
                   for (let param of params) {
@@ -263,7 +262,7 @@ export let LazyImgs = class {
 
         if (!$params.load && ($imgInfo.params.top - $params.windowHeight - $options.indent <= 0) && ($imgInfo.params.top + $imgInfo.params.height + $options.indent >= 0)) {
 
-          this.__loadImg($imgsInfo);
+          this.__loadImg($imgInfo);
 
         }
 
@@ -277,7 +276,6 @@ export let LazyImgs = class {
 
     if (info && typeof info === "object") {
 
-      let $params = this.info.params;
       let $helpFuncs = this.helpFuncs;
       let img = info.img;
       let params = info.params;

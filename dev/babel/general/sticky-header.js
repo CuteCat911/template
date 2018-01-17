@@ -53,7 +53,7 @@ export let StickyHeader = class {
 					top: 0,
 					left: 0,
 					width: "100%",
-					transition: (params.transitionTime && typeof params.transitionTime === "string") ? "transform " + params.transitionTime + " linear" : null
+					transition: (params.transitionTime && typeof params.transitionTime === "string") ? "transform " + params.transitionTime + " linear" : null,
 					zIndex: (params.zIndex <= 0 || params.zIndex >= 0) ? params.zIndex : 100
 				},
 				indent: {
@@ -192,11 +192,11 @@ export let StickyHeader = class {
 
 		if ($scroll) {
 
-			applyStyle($info.el, $mode, "add");
+			applyStyle($info.el, $styles[$mode], "add");
 
 		} else {
 
-			applyStyle($info.el, $mode, "remove");
+			applyStyle($info.el, $styles[$mode], "remove");
 
 		}
 
@@ -206,7 +206,7 @@ export let StickyHeader = class {
 
 		let $info = this.info;
 		let $params = $info.params;
-		let $options - $info.options;
+		let $options = $info.options;
 
 		if ($params.scroll && $info.el) {
 

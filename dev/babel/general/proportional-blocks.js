@@ -37,7 +37,7 @@ export let ProportionalBlocks = class {
             }
 
           }
-        }
+        },
         resize() {
 
           $module.__setBlocksInfo();
@@ -111,12 +111,12 @@ export let ProportionalBlocks = class {
         if (options.priority == "width") {
 
           currentSize = info.el.offsetWidth;
-          wantedSize = currentSize * options.ratio[1] / options.ratio[0]; 
+          wantedSize = currentSize * ratio[1] / ratio[0]; 
 
         } else if (options.priority == "height") {
 
           currentSize = info.el.offsetHeight;
-          wantedSize = currentSize * options.ratio[0] / options.ratio[1];
+          wantedSize = currentSize * ratio[0] / ratio[1];
 
         }
 
@@ -168,7 +168,7 @@ export let ProportionalBlocks = class {
 
     if (getAssociativeArrayLength($blocksInfo) > 0) {
 
-          for (let i in b$blocksInfo) {
+          for (let i in $blocksInfo) {
 
             this.__setSize($blocksInfo[i]);
 

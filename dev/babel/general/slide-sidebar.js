@@ -248,7 +248,7 @@ export let SlideSidebar = class {
 
               }
 
-              if (scrll >= offset + height + bottom - windowHeight && scroll + windowHeight < startLine + contentHeight && marginTop >= 1) {
+              if (scroll >= offset + height + bottom - windowHeight && scroll + windowHeight < startLine + contentHeight && marginTop >= 1) {
 
                 params.position.bottom = "active";
                 $styles.fixed.bottom.marginTop = "";

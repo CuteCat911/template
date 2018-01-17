@@ -43,12 +43,12 @@ export let loader = {
 
 				}
 
-				info.block.el.appendChild(info.indicator.el);
+				block.el.appendChild(indicator.el);
 
 			};
 
 			createLoader();
-			return info.block.el;
+			return block.el;
 
 		}
 

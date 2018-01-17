@@ -1,145 +1,145 @@
-import {findElemsClass, findFirstTag} from "./find";
-import {windowResize} from "./window-resize";
-import {pageLoad} from "./page-load";
-import {inspectMobile} from "./inspect-mobile";
+// import {findElemsClass, findFirstTag} from "./find";
+// import {windowResize} from "./window-resize";
+// import {pageLoad} from "./page-load";
+// import {inspectMobile} from "./inspect-mobile";
 
-export let hoverSvg = function(params) {
+// export let hoverSvg = function(params) {
 
-	if (params.icons != undefined && typeof params.icons === "string") {
+// 	if (params.icons != undefined && typeof params.icons === "string") {
 
-		let module = this;
-		let $svg = {
-			icons: findElemsClass(params.icons, document),
-			svgIconDocument: undefined,
-			svgIcon: undefined,
-			eventStart: "mouseover",
-			eventEnd: "mouseout"
-		};
+// 		let module = this;
+// 		let $svg = {
+// 			icons: findElemsClass(params.icons, document),
+// 			svgIconDocument: undefined,
+// 			svgIcon: undefined,
+// 			eventStart: "mouseover",
+// 			eventEnd: "mouseout"
+// 		};
 
-		if ($svg.icons != undefined && typeof $svg.icons === "object") {
+// 		if ($svg.icons != undefined && typeof $svg.icons === "object") {
 
-			let mobile = inspectMobile();
-			let reWriteEvent = function() {
+// 			let mobile = inspectMobile();
+// 			let reWriteEvent = function() {
 
-				mobile = inspectMobile();
+// 				mobile = inspectMobile();
 
-				if (mobile == true) {
+// 				if (mobile == true) {
 
-					$svg.eventStart = "touchstart";
-					$svg.eventEnd = "touchend";
+// 					$svg.eventStart = "touchstart";
+// 					$svg.eventEnd = "touchend";
 
-				}
+// 				}
 
-				else {
+// 				else {
 
-					$svg.eventStart = "mouseover";
-					$svg.eventEnd = "mouseout";
+// 					$svg.eventStart = "mouseover";
+// 					$svg.eventEnd = "mouseout";
 
-				}
+// 				}
 
-			};
+// 			};
 
-			if (mobile == true) {
+// 			if (mobile == true) {
 
-				$svg.eventStart = "touchstart";
-				$svg.eventEnd = "touchend";
+// 				$svg.eventStart = "touchstart";
+// 				$svg.eventEnd = "touchend";
 
-			};
+// 			};
 
-			let mobileResize = new windowResize(reWriteEvent);
+// 			let mobileResize = new windowResize(reWriteEvent);
 
-			module.hover = function(event, elem) {
+// 			module.hover = function(event, elem) {
 
-				$svg.svgIconDocument = findFirstTag("object", elem);
+// 				$svg.svgIconDocument = findFirstTag("object", elem);
 
-				if ($svg.svgIconDocument != false) {
+// 				if ($svg.svgIconDocument != false) {
 
-					$svg.svgIconDocument = $svg.svgIconDocument.contentDocument;
-					$svg.svgIcon = findFirstTag("svg", $svg.svgIconDocument);
+// 					$svg.svgIconDocument = $svg.svgIconDocument.contentDocument;
+// 					$svg.svgIcon = findFirstTag("svg", $svg.svgIconDocument);
 
-					if ($svg.svgIcon != false) {
+// 					if ($svg.svgIcon != false) {
 
-						let elemClassesLength = $svg.svgIcon.classList.length;
+// 						let elemClassesLength = $svg.svgIcon.classList.length;
 
-						if (elemClassesLength != 0) {
+// 						if (elemClassesLength != 0) {
 
-							let firstClass = $svg.svgIcon.classList[0];
-							let hoverClass = firstClass + "--hover";
+// 							let firstClass = $svg.svgIcon.classList[0];
+// 							let hoverClass = firstClass + "--hover";
 
-							if (event == "add") {
+// 							if (event == "add") {
 
-								$svg.svgIcon.classList.add(hoverClass);
+// 								$svg.svgIcon.classList.add(hoverClass);
 
-							}
+// 							}
 
-							else {
+// 							else {
 
-								$svg.svgIcon.classList.remove(hoverClass);
+// 								$svg.svgIcon.classList.remove(hoverClass);
 
-							}
+// 							}
 
-						}
+// 						}
 
-						else {
+// 						else {
 
-							if (event == "add") {
+// 							if (event == "add") {
 
-								$svg.svgIcon.classList.add("hovered");
+// 								$svg.svgIcon.classList.add("hovered");
 
-							}
+// 							}
 
-							else {
+// 							else {
 
-								$svg.svgIcon.classList.remove("hovered");
+// 								$svg.svgIcon.classList.remove("hovered");
 
-							}
+// 							}
 
-						}
+// 						}
 
-					}
+// 					}
 
-				}
+// 				}
 
-			};
+// 			};
 
-			let iconsEvent = function() {
+// 			let iconsEvent = function() {
 
-				for (let item of $svg.icons) {
+// 				for (let item of $svg.icons) {
 
-					item.addEventListener($svg.eventStart, function() {
+// 					item.addEventListener($svg.eventStart, function() {
 
-						module.hover("add", item);
+// 						module.hover("add", item);
 
-					});
+// 					});
 
-					item.addEventListener($svg.eventEnd, function() {
+// 					item.addEventListener($svg.eventEnd, function() {
 
-						module.hover("remove", item);
+// 						module.hover("remove", item);
 
-					});
+// 					});
 
-				}
+// 				}
 
-			};
+// 			};
 
-			let hover = new pageLoad(iconsEvent);
+// 			let hover = new pageLoad(iconsEvent);
 
-		}
+// 		}
 
-		else {
+// 		else {
 
-			console.error();
-			return false;
+// 			console.error();
+// 			return false;
 
-		}
+// 		}
 
-	}
+// 	}
 
-	else {
+// 	else {
 
-		console.error();
-		return false;
+// 		console.error();
+// 		return false;
 
-	}
+// 	}
 
-}
+// }
