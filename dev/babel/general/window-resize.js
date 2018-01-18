@@ -1,6 +1,7 @@
-// windowResize - ver. 1.0.0
+// windowResize - ver. 1.1.0
 
 import {debounce} from "./debounce";
+import {inspectMobile} from "./inspect-mobile";
 
 let eventArray = [];
 
@@ -35,8 +36,25 @@ let applyFunc = function() {
 
 };
 
+let windowHeight = window.innerHeight;
+
 window.addEventListener("resize", function() {
 
-	debounce(applyFunc, 150);
+	let $windowHeight = window.innerHeight;
+
+	if (inspectMobile()) {
+
+		if (Math.abs(windowHeight - $windowHeight) > 60) {
+
+			debounce(applyFunc, 150);
+			windowHeight = $windowHeight;
+
+		}
+
+	} else {
+
+		debounce(applyFunc, 150);
+
+	}
 
 });
