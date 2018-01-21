@@ -1,2005 +1,1407 @@
-// // Validation - ver. 1.1.7
-
-// // Description
-// // * * * = * * *
-
-// // Функция конструктор реализующая функционал валидации форм, сбора данных с формы и проверки на заполненность форм.
-
-// // Принимает в себя объект с параметрами.
-// // Описание параметров:
-// // 1. container (обязательный) (тип string) - класс элементов выступающих в роли форм (не обязательно чтобы это был тег <form>).
-// // 2. inputs (обязательный) (тип string) - класс элементов отвечающих за ввод данных, обязательно должны быть в container-е. (У каждой формы своя видимость полей ввода).
-// // 3. submitBtns (не обязательный) (тип string) - класс элементов выступающих в роли кнопок отправки формы. (Проверяет форму, смотрит на её валидность, собирает данные, но не отправляет форму. В случае успешной проверки очишает форму.).
-// // 4. warnBlocks (не обязательный) (тип string) - класс элементов которые будут отвечать за вывод предупреждений. (С некоторыми типами полей ввода лучше обязательно их использовать).
-// // 5. dynamic (не обязательный) (тип boolean) - включает или выключает работу с динамическими элементами (подгружаемые ajax-ом).
-// // 6. ajax (не обязательный) (тип boolean) - включает или выключает работу форм с ajax отправкой. Если выключен, то форма после прохождения валидации сразу отправляет на адрес указаный в action.
-// // 7. defaultSuccessClass (не обязательный) (тип boolean) - если включен то всем полям прошедшим валидацию будет присваиваться класс is-success (по-умолчанию выключен и применяются дефолтные стили).
-// // 8. defaultErrorClass (не обязательный) (тип boolean) - если включен то всем полям не прошедшим валидацию будет присваиваться класс is-error (по-умолчанию выключен и применяются дефолтные стили).
-// // 9. defaultClasses (не обязательный) (тип boolean) - если включен то одновременно включает параметры defaultSuccessClass и defaultErrorClass.
-// // 10. successClass (не обязательный) (тип string) - класс который будет добваляться всем полям прошедшим валидацию (если включен defaultSuccessClass, то successClass его перекрывает).
-// // 11. errorClass (не обязательный) (тип string) - класс который будет добваляться всем полям не прошедшим валидацию (если включен defaultErrorClass, то errorClass его перекрывает).
-// // 12. sendTimeout (не обязательный) (тип number) - время после которого страница будет перезагружена после отправки формы (если ajax выключен). Задается в миллисикундах.
-// // 13. clearTimeout (не обязательный) (тип number) - время после которого страница будет очищена после того как успешно пройдет валидацию (если ajax включен). Задается в миллисикундах. (по-умолчанию 200).
-// // 14. rules (не обязательный) (тип object) - список правил которые будут применяться к полям ввода. Позволяют задавать текст сообщений об ошибках, успешных проверках валидации и дефолтные значения для полей (Можно хранить в json файле). data атрибуты перекрывают значения правил.
-
-// // Пример объекта с параметрами:
-// // {
-// //  container: "js-form",
-// //  inputs: "js-input",
-// //  submitBtns: "js-submit",
-// //  warnBlocks: "js-warn-block",
-// //  ajax: true,
-// //  defaultClasses: true,
-// //  clearTimeout: 350
-// // }
-
-// // Доступные атрибуты:
-// // 1. data-form-name - содержит название формы. По этому названию кнопки проверки взаимодействуют с формами. (Применимо к формам и кнопкам проверки.)
-// // 2. data-input-name - содержит название поля ввода. Не обязательно указывать для тех элементов у которых есть атрибут name. Без этого атрибута или атрибута name данные с поля не будут собираться. (Применимо к полям ввода.)
-// // 3. data-warn-name - содерижит название элемента с предупреждением. Относиться к тому полю ввода, у которого значение аттрибута data-input-name или name идентично. (Применимо к элементам предупреждения.)
-// // 4. data-success-text - содержит текст успешной проверки для поля ввода. Значение этого атрибута перекрывает значения из правил (rules). (Применимо к полям ввода.)
-// // 5. data-error-text - содержит текст ошибки при непрохождении валидации полем. Значение этого атрибута перекрывает значения из правил (rules). (Применимо к полям ввода.)
-// // 6. data-error-regtext - содержит текст ошибки при непрохождении валидации полем по регулярному выражению. Значение этого атрибута перекрывает значения из правил (rules). (Применимо к полям ввода.)
-// // 7. data-default-text - содержит дефолтный текст поля. Применятся после сброса введеных значений формы. Значение этого атрибута перекрывает значения из правил (rules). (Применимо к полям ввода.)
-// // 8. data-error-min-text - содержит текст ошибки при непрохождении валидации полем по наименьшему количеству символов. Значение этого атрибута перекрывает значения из правил (rules). (Применимо к полям ввода.)
-// // 9. data-error-max-text - содержит текст ошибки при непрохождении валидации полем по наибольшему количеству символов. Значение этого атрибута перекрывает значения из правил (rules). (Применимо к полям ввода.)
-// // 10. data-no-valid - указывает на элемент который не нужно валидировать, но собрать с него данные необходимо. (Применимо к полям ввода.)
-// // 11. data-min-check - позволяет задать минимальное количество отмеченных чекбоксов для прохождения валидации. (Применимо ко всем <input type="checkbox"> одинаковой группы.)
-// // 12. data-min-value - позволяет задать минимальное количество символов для прохождения валидации. (Применимо к полям ввода.)
-// // 13. data-max-value - позволяет задать максимальное количество символов для прохождения валидации. (Применимо к полям ввода.)
-// // 14. data-custom-value - позволяет задать данные для кастомных полей ввода. (Применимо ко всем полям ввода, которые не содержат теги: <select>, <input>, <textarea>.)
-// // 15. data-reg-exp - позвоялет задать регулярное выражение по которому будет происходить проверка поля. (Применимо к полям ввода.)
-// // 16. data-clear-form - указывает очищать ли форму после валидации. При значении "false" - ворма не будет очищена. (Применимо к форме.)
-
-// // Доступные методы:
-// // 1. errorValidation - отработает в случае не прохождения валидации формы.
-// // Принимает в себя функцию или массив функций, которые будут выполнены. Во все функции первым параметром передеется информация по форме не прошедшей проверку.
-// // 2. successValidation - отработает в случае успешной валидации формы.
-// // Принимает в себя функцию или массив функций, которые будут выполнены. Во все функции первым параметром передеется информация по форме прошедшей проверку.
-// // 3. clearForm - очищает указанную форму.
-// // Принимает в себя название формы, которую нужно очистить.
-// // 4. findContainers - находит все формы (рекомендуется использовать после динамической подгрузки контента).
-// // 5. findInputs - находит все поля ввода и соотносит их к найденым формам (рекомендуется использовать после динамической подгрузки контента).
-// // 6. findWarnBlocks - находит все элементы с предупрежедниями и соотносит их к найденым формам (рекомендуется использовать после динамической подгрузки контента).
-// // 7. findSubmitBtns - находит все кнопки проверок (рекомендуется использовать после динамической подгрузки контента).
-// // 8. findAllElements - выполняет одновременно методы: findContainers, findInputs, findWarnBlocks, findSubmitBtns (рекомендуется использовать после динамической подгрузки контента).
-// // 9. validate - в зависимости от переданных параметров выполняет различный функционал.
-// // Принимает в себя имя формы и режим работы:
-// // 1. validate - валидирует указанную форму.
-// // 2. valid - проверяет на заполненность указанныую форму и возвращает true или false.
-// // 3. data - возвращает данные собранные с формы в виде объекта, вне зависимости свалидирована она или нет.
-// // 10. removeErrorFuncs - удаляет все функции записанные в массив ошибок.
-// // 11. removeSuccessFuncs - удаляет все функции записанные в массив успеха.
-
-// // Описание правил (rules):
-// // Правила представляют из себя объект с параметрами:
-// // 1. Сначала указываются названия форм для которых будут применяться правила или можно указать все формы сразу параметром global (чтобы правила корректно применялись, важно чтобы global стоял в самом верху).
-// // 2. Потом у форм указываются теги к которым будут применяться правила. (Правила для имен и типов приоритетней чем правила для тегов).
-// // 3. У тегов указываются правила для типов (type) или имен (name). (Правила для имен приоритетней чем для типов).
-// // 4. У имен или тегов задаются возможные значения имен или типов, для которых будут применяться определенные правила.
-// // 5. У заданых значений могут быть заданы параметры:
-// //  5.1 text c возможными параметрами:
-// //    i success - задает текст успешной проверки
-// //    ii error - задает текст ошибки
-// //    iii errorReg - задает текст ошибки по регулярному выражению
-// //    iv default - задает дефолтный текст
-// //  5.2 regExp с возможными параметрами:
-// //    i pattern - задает регулярное выражение для проверки поля
-// // Пример правил:
-// // {
-// //  global: {
-// //    div:{
-// //      text: {
-// //        success: "Успешно"
-// //        error: "Провально"
-// //      }
-// //    },
-// //    input: {
-// //      type: {
-// //        text: {
-// //          text: {
-// //            success: "Гуд",
-// //            error: "Не заполено",
-// //            errorReg: "Не корректно заполнено"
-// //          },
-// //          regExp: {
-// //            pattern: "^[^a-zA-Zа-яёА-ЯЁ]{11,}$, i"
-// //          }
-// //        }
-// //      }
-// //    }
-// //  },
-// //  form1: {
-// //    input: {
-// //      type: {
-// //        text: {
-// //          text: {
-// //            error: "Ахтунг"
-// //          }
-// //        },
-// //        email: {
-// //          text: {
-// //            error: "Двойной ахтунг"
-// //          }
-// //        }
-// //      }
-// //    }
-// //  },
-// //  form2: {
-// //    textarea: {
-// //      name: {
-// //        message: {
-// //          text: {
-// //            success: "Усе заполнено"
-// //          }
-// //        }
-// //      }
-// //    }
-// //  }
-// // }
-
-// // Validation поддерживает валидацию тегов:
-// // 1. input type:
-// //  1.1 text
-// //  1.2 email
-// //  1.3 tel
-// //  1.4 number
-// //  1.5 password
-// //  1.6 hidden
-// //  1.7 search
-// //  1.8 url
-// //  1.9 checkbox
-// //  1.10 radio
-// //  1.11 file
-// //  1.12 range
-// // 2. select
-// // 3. textarea
-// // 4. любого другого, если его значение записано в атрибут data-custom-value и у него есть атрибут data-input-name
-
-// // Описание функционала валидации.
-// // Проверка формы может быть осуществлена как при помощи специальных кнопок, которые указываются в параметрах (submitBtns), так и с помощью метода (validate).
-// // У каждой формы должен быть атрибут data-form-name с её названием, так же у кнопок, которые будет её валидировать должен такойже атрибут с таким же названием.
-// // Если в данных собраных с формы содержаться картинки, то такие данные отправлять c кодировкой multipart/form-data (объект FormData).
-
-// // * * * = * * *
-// // End Description
-
-// import {findFirstClass, findElemsClass} from "./find";
-// import {applyClasses} from "./apply-classes";
-// import {applyStyle} from "./apply-style";
-// import {successClass, errorClass} from "./state-classes";
-// import {findCurrentParent} from "./find-current-parent";
-
-// export let Validation = function(params) {
-
-//   if ((params.container && typeof params.container === "string") && (params.inputs && typeof params.inputs === "string")) {
-
-//     let module = this;
-//     let moduleInfo = {
-//       elems: {
-//         containers: findElemsClass(params.container, document),
-//         inputs: findElemsClass(params.inputs, document),
-//         btns: null
-//       },
-//       containers: {},
-//       elemsClasses: {
-//         container: params.container,
-//         input: params.inputs,
-//         submitBtn: null,
-//         warnBlock: null
-//       },
-//       options: {
-//         dynamic: false,
-//         ajax: false,
-//         classes: {
-//           success: null,
-//           error: null,
-//         },
-//         timeouts: {
-//           send: 0,
-//           clear: 200
-//         }
-//       },
-//       funcs: {
-//         error: [],
-//         success: []
-//       },
-//       rules: null
-//     };
-//     let dataAttr = {
-//       noValidate: "data-no-valid",
-//       clearForm: "data-clear-form",
-//       minCheck: "data-min-check",
-//       customValue: "data-custom-value",
-//       regExp: {
-//         pattern: "data-reg-exp"
-//       },
-//       name: {
-//         form: "data-form-name",
-//         input: "data-input-name",
-//         warn: "data-warn-name"
-//       },
-//       text: {
-//         success: "data-success-text",
-//         error: "data-error-text",
-//         errorReg: "data-error-regtext",
-//         default: "data-default-text",
-//         errorMin: "data-error-min-text",
-//         errorMax: "data-error-max-text"
-//       },
-//       value: {
-//         min: "data-min-value",
-//         max: "data-max-value"
-//       }
-//     };
-//     let colors = {
-//       green: "#257400",
-//       lightGreen: "rgba(37,116,0,0.3)",
-//       red: "#ef0505",
-//       lightRed: "rgba(239,5,5,0.3)"
-//     };
-//     let styles = {
-//       success: {
-//         color: colors.green,
-//         backgroundColor: colors.lightGreen,
-//         border: "1px solid " + colors.green
-//       },
-//       error: {
-//         color: colors.red,
-//         backgroundColor: colors.lightRed,
-//         border: "1px solid " + colors.red
-//       }
-//     };
-
-//     // Сокращение часто используемых частей объекта moduleInfo
-
-//     let elems = moduleInfo.elems;
-//     let elemsClasses = moduleInfo.elemsClasses;
-//     let options = moduleInfo.options;
-//     let funcs = moduleInfo.funcs;
-
-//     // End Сокращение часто используемых частей объекта moduleInfo
-
-//     // Вспомогательные функции
-
-//     let helpFuncs = {
-//       getNameInput: function(input) {
-
-//         if (input && typeof input === "object") {
-
-//           let name = input.getAttribute("name") || input.getAttribute(dataAttr.name.input);
-
-//           if (name) {
-
-//             return name;
-
-//           } else {
-
-//             return null;
-
-//           }
-
-//         }
-
-//       },
-//       // Установка всех параметров у поля ввода которые указаны у него в опциях
-//       getOptions: function(params) {
-
-//         let input = params.input;
-//         let inputInfo = params.inputInfo;
-//         let formName = params.formName;
-//         let option = params.option;
-
-//         if ((input && typeof input === "object") && (inputInfo && typeof inputInfo === "object") && (formName && typeof formName === "string") && (option && typeof option === "string")) {
-
-//           let setOption = inputInfo.options[option];
-//           let rules = moduleInfo.rules;
+// Validation - ver. 1.0.0
+
+import {findFirstClass, findElemsClass} from "./find";
+import {applyClasses} from "./apply-classes";
+import {applyStyle} from "./apply-style";
+import {successClass, errorClass} from "./state-classes";
+import {findCurrentParent} from "./find-current-parent";
+
+export let Validation = class {
+
+  constructor(params) {
+
+    if ((params.container && typeof params.container === "string") && (params.inputs && typeof params.inputs === "string")) {
+
+      let $module = this;
+
+      this.info = {
+        elemsClasses: {
+          containers: params.container,
+          inputs: params.inputs,
+          submitBtns: (params.submitBtns && typeof params.submitBtns === "string") ? params.submitBtns : null,
+          warnBlocks: (params.warnBlocks && typeof params.warnBlocks === "string") ? params.warnBlocks : null
+        },
+        elems: {
+          containers: (findElemsClass(params.container, document)) ? findElemsClass(params.container) : null,
+          inputs: (findAllElements(params.inputs, document)) ? findAllElements(params.inputs, document) : null,
+          btns: null
+        }
+        containers: {},
+        options: {
+          dynamic: (params.dynamic && typeof params.dynamic === "boolean") ? params.dynamic : false,
+          ajax: (params.ajax && typeof params.ajax === "boolean") ? params.ajax : false,
+          classes: {
+            success: null,
+            error: null,
+          },
+          timeouts: {
+            send: (params.sendTimeout >= 0) ? params.sendTimeout : 0,
+            clear: (params.clearTimeout >= 0) ? params.clearTimeout : 200
+          }
+        },
+        rules: (params.rules && typeof params.rules === "object") ? params.rules : null
+      };
+      this.dataAttrs = {
+        noValidate: "data-no-valid",
+        clearForm: "data-clear-form",
+        minCheck: "data-min-check",
+        customValue: "data-custom-value",
+        regExp: {
+          pattern: "data-reg-exp"
+        },
+        name: {
+          form: "data-form-name",
+          input: "data-input-name",
+          warn: "data-warn-name"
+        },
+        text: {
+          success: "data-success-text",
+          error: "data-error-text",
+          errorReg: "data-error-regtext",
+          default: "data-default-text",
+          errorMin: "data-error-min-text",
+          errorMax: "data-error-max-text"
+        },
+        value: {
+          min: "data-min-value",
+          max: "data-max-value"
+        }
+      };
+      this.colors = {
+        green: "#257400",
+        lightGreen: "rgba(37,116,0,0.3)",
+        red: "#ef0505",
+        lightRed: "rgba(239,5,5,0.3)"
+      };
+      this.styles = {
+        success: {
+          color: $module.colors.green,
+          backgroundColor: $module.colors.lightGreen,
+          border: "1px solid " + $module.colors.green
+        },
+        error: {
+          color: $module.colors.red,
+          backgroundColor: $module.colors.lightRed,
+          border: "1px solid " + $module.colors.red
+        }
+      };
+      this.helpFuncs = {
+        get: {
+          nameInput(input) {
 
-//           if (setOption) {
+            if (input && typeof input === "object") {
 
-//             for (let i in setOption) {
+              let $dataAttrs = $module.dataAttrs;
+              let name = input.getAttribute("name") || input.getAttribute($dataAttrs.name.input);
 
-//               if (input.hasAttribute(dataAttr[option][i])) {
+              return (name) ? name : null;
 
-//                 // Взятие значения из data атрибутов
+            }
 
-//                 setOption[i] = input.getAttribute(dataAttr[option][i]);
+          },
+          warnBlocks(formName) {
 
-//               } else if (rules) {
+            if (formName && typeof formName === "string") {
 
-//                 // Взятие значения из правил
+              let $containers = $module.info.containers;
 
-//                 for (let j in rules) {
+              for (let i in $containers) {
 
-//                   let tagRules = rules[j][inputInfo.tag];
+                let currentFormName = $containers[i].el.getAttribute($module.dataAttrs.name.form);
 
-//                   if ((j == formName || j == "global") && tagRules) {
+                if (currentFormName == formName) {
 
-//                     let nameRules = tagRules.name;
-//                     let typeRules = tagRules.type;
+                  return $containers[i].warnBlocks;
 
-//                     if (nameRules && typeRules) {
+                }
 
-//                       if (nameRules[inputInfo.name]) {
+              }
 
-//                         if (nameRules[inputInfo.name][option]) {
+            }
 
-//                           if (nameRules[inputInfo.name][option][i]) {
+          }
+        },
+        set: {
+          inputParams(params) {
 
-//                             setOption[i] = nameRules[inputInfo.name][option][i];
+            let input = params.input;
+            let inputInfo = params.inputInfo;
+            let formName = params.formName;
+            let param = params.param;
 
-//                           }
+            if ((input && typeof input === "object") && (inputInfo && typeof inputInfo === "object") && (formName && typeof formName === "string") && (param && typeof param === "string")) {
 
-//                         }
+              let setParam = inputInfo.params[param];
+              let $rules = $module.info.rules;
+              let $dataAttrs = $module.dataAttrs;
 
-//                       } else if (typeRules[inputInfo.type]) {
+              if (setParam) {
 
-//                         if (typeRules[inputInfo.type][option]) {
+                for (let i in setParam) {
 
-//                           if (typeRules[inputInfo.type][option][i]) {
+                  if (input.hasAttribute($dataAttrs[param][i])) {
 
-//                             setOption[i] = typeRules[inputInfo.type][option][i];
+                    setParam[i] = input.getAttribute($dataAttrs[param][i]);
 
-//                           }
+                  } else if ($rules) {
 
-//                         }
+                    for (let j in $rules) {
 
-//                       }
+                      let tagRules = $rules[j][inputInfo.tag];
 
-//                     } else if (nameRules && !typeRules) {
+                      if ((j == formName || j == "global") && tagRules) {
 
-//                       if (nameRules[inputInfo.name]) {
+                        let nameRules = tagRules.name;
+                        let typeRules = tagRules.type;
+                        let $setParam = function(typeRules) {
 
-//                         if (nameRules[inputInfo.name][option]) {
+                          if (typeRules && typeof typeRules === "object") {
 
-//                           if (nameRules[inputInfo.name][option][i]) {
+                            if (typeRules[inputInfo.name]) {
 
-//                             setOption[i] = nameRules[inputInfo.name][option][i];
+                              if (typeRules[inputInfo.name][param]) {
 
-//                           }
+                                setParam[i] = (typeRules[inputInfo.name][param][i]) ? typeRules[inputInfo.name][param][i] : null;
 
-//                         }
+                              }
 
-//                       }
+                            }
 
-//                     } else if (!nameRules && typeRules) {
+                          }
 
-//                       if (typeRules[inputInfo.type]) {
+                        };
 
-//                         if (typeRules[inputInfo.type][option]) {
+                        if (nameRules && typeRules) {
 
-//                           if (typeRules[inputInfo.type][option][i]) {
+                          $setParam(nameRules);
+                          $setParam(typeRules);
 
-//                             setOption[i] = typeRules[inputInfo.type][option][i];
+                        } else if (nameRules && !typeRules) {
 
-//                           }
+                          $setParam(nameRules);
 
-//                         }
+                        } else if (!nameRules && typeRules) {
 
-//                       }
+                          $setParam(typeRules);
 
-//                     } else if (!nameRules && !typeRules) {
+                        } else if (!nameRules && !typeRules) {
 
-//                       if (tagRules[option]) {
+                          if (tagRules[param]) {
 
-//                         if (tagRules[option][i]) {
+                            setParam[i] = (tagRules[param][i]) ? tagRules[param][i] : null;
 
-//                           setOption[i] = tagRules[option][i];
+                          }
 
-//                         }
+                        }
 
-//                       }
+                      }
 
-//                     }
+                    }
 
-//                   }
+                  }
 
-//                 }
+                }
 
-//               }
+              }
 
-//             }
+            }
 
-//           }
+          }
+        },
+        findContainerElems(type) {
 
-//         }
+          if (type && typeof type === "string") {
 
-//       },
-//       text: {
-//         // Вывод текста в зависимости от его типа
-//         writeText: function(params) {
+            for (let i in $module.info.containers) {
 
-//           let input = params.input;
-//           let elem = params.elem;
-//           let textOptions = params.textOptions;
-//           let typeText = params.typeText;
-//           let elemPlace = params.elemPlace;
-//           let inputPlace = params.inputPlace;
+              if ($info.containers[i] && typeof $info.containers[i] === "object") {
 
-//           if ((input && typeof input === "object") && (elem && typeof elem === "object") && (textOptions && typeof textOptions === "object") && (typeText && typeof typeText === "string") && (elemPlace && typeof elemPlace === "string")) {
+                info[type] = (findElemsClass($elemsClasses[type], document)) ? findElemsClass($elemsClasses[type], document) : null;
 
-//             let currentOption = textOptions[typeText];
-//             let errorOption = textOptions.error;
-//             let setDefaultValue = function(elem, place, value) {
+              }
 
-//               if ((elem && typeof elem === "object") && (place && typeof place === "string")) {
+            }
 
-//                 if (elem.hasAttribute(dataAttr.customValue)) {
+          }
 
-//                   elem.setAttribute(dataAttr.customValue, value);
+        }
+      };
 
-//                 } else {
+      let $elems = this.info.elems;
+      let $elemsClasses = this.info.elemsClasses;
+      let $options = this.info.options;
+      let $dataAttrs = this.dataAttrs;
 
-//                   elem[place] = value;
+      this.__setClasses(params);
+      this.findElems("all");
 
-//                 }
+      if ($elemsClasses.submitBtns && $options.dynamic) {
 
-//               }
+        document.addEventListener("click", function(e) {
 
-//             };
-//             let setDefaultOtherValue = function(elem, place) {
+          let elem = e.target;
 
-//               // Очистка значения только для тех элементов которые принадлежат к: спискам, чекбоксам, радио кнопкам, файлам и ползункам
+          if (elem.classList.contains($elemsClasses.submitBtns)) {
 
-//               if ((elem && typeof elem === "object") && (place && typeof place === "string")) {
+            e.preventDefault();
 
-//                 if (place == "option") {
+            let btn = this;
+            let formName = btn.getAttribute($dataAttrs.name.form);
 
-//                   elem.options[0].selected = true;
+            if (formName) {
 
-//                 } else if (place == "checked") {
+              $module.validate(formName, "validate");
 
-//                   elem.checked = false;
+            }
 
-//                 } else if (place == "file" || place == "range") {
+          }
 
-//                   elem.value = null;
+        });
 
-//                 }
+      } else if ($elems.btns) {
 
-//               }
+        for (let $btn of $elems.btns) {
 
-//             };
-//             let clearInputPlace = function() {
+          $btn.addEventListener("click", function(e)) {
 
-//               // Если есть элемент для вывода ошибок
+            e.preventDefault();
 
-//               if (inputPlace && typeof inputPlace === "string") {
+            let formName = $btn.getAttribute($dataAttrs.name.form);
 
-//                 if (inputPlace != "option" && inputPlace != "checked" && inputPlace != "file" && inputPlace != "range") {
+            if (formName) {
 
-//                   // Очистка значения только для тех элементов которые не принадлежат к: спискам, чекбоксам, радио кнопкам, файлам и ползункам
+              $module.validate(formName, "validate");
 
-//                   setDefaultValue(input, inputPlace, "");
+            }
 
-//                 } else {
+          }
 
-//                   setDefaultOtherValue(input, inputPlace);
+        }
 
-//                 }
+      }
 
-//               }
+    }
 
-//             };
+  }
 
-//             if (typeText == "errorReg" || typeText == "errorMin" || typeText == "errorMax") {
+  __setClasses(params) {
 
-//               // Если есть какая-то ошибка связаная с определенными параметрами
+    if (params && typeof params === "object") {
 
-//               if (elemPlace != "option" && elemPlace != "checked" && elemPlace != "file" && elemPlace != "range") {
+      let $classes = this.info.options.classes;
 
-//                 // Вывод ошибки только для тех элементов которые не принадлежат к: спискам, чекбоксам, радио кнопкам, файлам и ползункам
+      $classes.success = (params.defaultSuccessClass == true) ? successClass : null;
+      $classes.error = (params.defaultErrorClass == true) ? errorClass : null;
+      $classes.success = (params.defaultClasses == true) ? successClass : null;
+      $classes.error = (params.defaultClasses == true) ? errorClass : null;
+      $classes.success = (params.successClass && typeof params.successClass === "string") ? params.successClass : null;
+      $classes.error = (params.errorClass && typeof params.errorClass === "string") ? params.errorClass : null;
 
-//                 if (currentOption) {
+    }
 
-//                   // Если есть значение для ошибки по параметру
+  }
 
-//                   elem[elemPlace] = currentOption;
+  findElems(mode) {
 
-//                 } else if (!currentOption && errorOption) {
+    if (mode && typeof mode === "string") {
 
-//                   // Если нет значения для ошибки по параметру
-//                   // Вывод дефолтной ошибки
+      let $info = this.info;
+      let $elems = $info.elems;
+      let $elemsClasses = $info.elemsClasses;
+      let $helpFuncs = this.helpFuncs;
 
-//                   elem[elemPlace] = errorOption;
+      if (mode == "containers") {
 
-//                 }
+        $elems.containers = findElemsClass($elemsClasses.containers, document);
 
-//                 clearInputPlace();
+        if (containers) {
 
-//               };
+          for (let i in containers) {
 
-//             } else if (typeText == "default") {
+            let container = containers[i];
 
-//               // Если нужно привести поле к дефолтному состоянию
+            if (typeof container === "object") {
 
-//               if (elemPlace != "option" && elemPlace != "checked" && elemPlace != "file" && elemPlace != "range") {
+              $info.containers[i] = {
+                el: container,
+                inputs: null,
+                warnBlocks: null
+              };
 
-//                 // Вывод ошибки только для тех элементов которые не принадлежат к: спискам, чекбоксам, радио кнопкам, файлам и ползункам
+            }
 
-//                 if (currentOption) {
+          }
 
-//                   setDefaultValue(elem, elemPlace, currentOption);
+        }
 
-//                 } else {
+      } else if (mode == "inputs") {
 
-//                   setDefaultValue(elem, elemPlace, "");
+        $elems.inputs = findElemsClass($elemsClasses.inputs, document);
+        $helpFuncs.findContainerElems("inputs");
 
-//                 };
+      } else if (mode == "warnBlocks") {
 
-//                 clearInputPlace();
+        if ($elemsClasses.warnBlocks) {
 
-//               } else {
+          $helpFuncs.findContainerElems("warnBlocks");
 
-//                 setDefaultOtherValue(elem, elemPlace);
+        }
 
-//               }
+      } else if (mode == "submitBtns") {
 
-//             } else if (typeText == "notClear") {
+        if ($elemsClasses.submitBtns) {
 
-//               // Если с текстом в поле ничео не должно происходить
+          $elems.btns = (findElemsClass($elemsClasses.submitBtns, document)) ? findElemsClass($elemsClasses.submitBtns, document) : null;
 
-//             } else {
+        }
 
-//               // Вывод остальных типов текстов
+      } else if (mode == "all") {
 
-//               if (currentOption && (elemPlace != "option" && elemPlace != "checked" && elemPlace != "file" && elemPlace != "range")) {
+        this.findElems("containers");
+        this.findElems("inputs");
+        this.findElems("warnBlocks");
+        this.findElem("submitBtns");
 
-//                 elem[elemPlace] = currentOption;
-//                 clearInputPlace();
+      }
 
-//               }
+    }
 
-//             };
+  }
 
-//           };
+  __setData(inputInfo, data) {
 
-//         },
-//         // Установка места вывода текста в зависимости от типа элемента
-//         setText: function(params) {
+    if ((inputInfo && typeof inputInfo === "object") && (data && typeof data === "object") && inputInfo.name) {
 
-//           let input = params.input;
-//           let elem = params.currentElem;
-//           let inputInfo = params.inputInfo;
-//           let typeText = params.typeText;
+      let successText = inputInfo.params.text.success;
+      let errorText = inputInfo.params.text.error;
+      let errorRegText = inputInfo.params.text.errorReg;
+      let value = inputInfo.value;
+      let type = inputInfo.type;
+      let $helpFuncs = this.helpFuncs;
 
-//           if ((input && typeof input === "object") && (elem && typeof elem === "object") && (inputInfo && typeof inputInfo === "object") && (typeText && typeof typeText === "string")) {
+      if (type == "checkbox" || type == "radio") {
 
-//             let type = inputInfo.type;
-//             let applyWriteText = function(place) {
+        let inputs = inputInfo.otherInputs;
+        let values;
 
-//               if (place && typeof place === "string") {
+        if (type == "checkbox") {
 
-//                 let params = {
-//                   input: input,
-//                   elem: elem,
-//                   textOptions: inputInfo.options.text,
-//                   typeText: typeText,
-//                   elemPlace: null,
-//                   inputPlace: null
-//                 };
+          values = [];
 
-//                 if (elem.classList.contains(elemsClasses.warnBlock)) {
+        }
 
-//                   // Если есть блок для предупреждения
+        for (let input of inputs) {
 
-//                   params.elemPlace = "innerText";
-//                   params.inputPlace = place;
+          let name = $helpFuncs.get.nameInput(input);
+          let type = input.getAttribute("type");
 
-//                 } else {
+          if (name == inputInfo.name && type == inputInfo.type && input.checked) {
 
-//                   // Если нет блока для предупреждения
+            if (type == "checkbox") {
 
-//                   params.elemPlace = place;
+              values.push(input.value);
 
-//                 }
+            } else if (type == "radio") {
 
-//                 helpFuncs.text.writeText(params);
+              values = input.value;
 
-//               }
+            }
 
-//             };
+          }
 
-//             switch (inputInfo.tag) {
-//               case "input":
+        }
 
-//                 if (type == "text" || type == "email" || type == "tel" || type == "number" || type == "password" || type == "hidden" || type == "search" || type == "url") {
-//                   applyWriteText("value");
-//                 } else if (type == "checkbox" || type == "radio") {
-//                   applyWriteText("checked");
-//                 } else if (type == "file") {
-//                   applyWriteText("file");
-//                 } else if (type == "range") {
-//                   applyWriteText("range");
-//                 }
+        data.inputs[inputInfo.name] = values;
 
-//                 break;
-//               case "textarea":
-//                 applyWriteText("value");
-//                 break;
-//               case "select":
-//                 applyWriteText("option");
-//                 break;
-//               default:
-//                 applyWriteText("innerText");
-//                 break;
-//             }
+      } else {
 
-//           };
+        if (value == successText || value == errorText || value == errorRegText) {
 
-//         }
-//       },
-//       errors: {
-//         // Добавление стилей и текстов для прошедших или не прошедших проверку полей
-//         addErrorSuccess: function(params) {
+          data.inputs[inputInfo.name] = "";
 
-//           let input = params.input;
-//           let inputInfo = params.inputInfo;
-//           let warnBlocks = params.warnBlocks;
-//           let errorParams = params.errorParams;
+        } else {
 
-//           if ((input && typeof input == "object") && (inputInfo && typeof inputInfo === "object")) {
+          data.inputs[inputInfo.name] = value;
 
-//             let currentElem = input;
-//             let classes = options.classes;
+        }
 
-//             if (warnBlocks) {
+      }
 
-//               // Проверка наличия блока для предупреждения и в случае успеха установка его в роли дефолтного элемента
+    }
 
-//               for (let warnBlock of warnBlocks) {
+  }
 
-//                 let name = warnBlock.getAttribute(dataAttr.name.warn);
+  __setErrors(params) {
 
-//                 if (name == inputInfo.name) {
+    let input = params.input;
+    let inputInfo = params.inputInfo;
+    let warnBlocks = params.warnBlocks;
+    let errors = params.errors;
+    let mode = params.mode;
 
-//                   currentElem = warnBlock;
+    if ((input && typeof input === "object") && (inputInfo && typeof inputInfo === "object") && (errors && typeof errors === "object") && (mode && typeof mode === "string")) {
 
-//                 }
+      let $dataAttrs = this.dataAttrs;
+      let $helpFuncs = this.helpFuncs;
+      let successText = inputInfo.params.text.success;
+      let errorText = inputInfo.params.text.error;
+      let errorRegText = inputInfo.params.text.errorReg;
+      let errorMinText = inputInfo.params.text.errorMin;
+      let errorMaxText = inputInfo.params.text.errorMax;
+      let inputs = inputInfo.otherInputs;
+      let value = inputInfo.value;
+      let applyErrorSuccess = function(params) {
 
-//               }
+        let error = params.error;
+        let errorRegExp = params.errorRegExp;
+        let errorMin = params.errorMin;
+        let errorMax = params.errorMax;
 
-//             }
+        if (mode == "validate") {
 
-//             let applySetText = function(typeText) {
+          let $params = {
+            input: input,
+            inputInfo: inputInfo,
+            warnBlocks: warnBlocks
+          };
+          let errorArray = [error, errorRegExp, errorMin, errorMax];
+          let errorNameArray = ["error", "errorRegExp", "errorMin", "errorMax"];
 
-//               if (typeText && typeof typeText === "string") {
+          if (typeof error === "boolean") {
 
-//                 helpFuncs.text.setText({
-//                   input: input,
-//                   currentElem: currentElem,
-//                   inputInfo: inputInfo,
-//                   typeText: typeText
-//                 });
+            $params.errorParams = {
+              error: null,
+              errorRegExp: null,
+              errorMin: null,
+              errorMax: null
+            };
 
-//               }
+            for (let i in errorArray) {
 
-//             };
+              if (errorArray[i] == true) {
 
-//             if (errorParams) {
+                $params.errorParams[errorNameArray[i]] = errorArray[i];
 
-//               let error = errorParams.error;
-//               let errorRegExp = errorParams.errorRegExp;
-//               let errorMin = errorParams.errorMin;
-//               let errorMax = errorParams.errorMax;
+              }
 
-//               if (error) {
+            }
 
-//                 // Если есть ошибка
+            this.__addErrorSuccess($params);
 
-//                 if (classes.success && classes.error) {
+          }
 
-//                   applyClasses(currentElem, [classes.success], "remove");
-//                   applyClasses(currentElem, [classes.error], "add");
+        }
 
-//                 } else {
+      };
 
-//                   applyStyle(currentElem, styles.success, "remove");
-//                   applyStyle(currentElem, styles.error, "add");
+      if (inputInfo.type == "checkbox" || inputInfo.type == "radio") {
 
-//                 }
+        let values;
+        let min;
+        let successSituation = function() {
 
-//                 if (errorRegExp) {
+        };
 
-//                   // Установка текста ошибки по регулярному выражению
+        if (inputInfo.type == "checkbox") {
 
-//                   applySetText("errorReg");
+          values = [];
+          min = input.getAttribute($dataAttrs.minCheck);
 
-//                 } else if (errorMin) {
+        }
 
-//                   // Установка текста ошибки по минимальному количеству символов
+        for (let item of inputs) {
 
-//                   applySetText("errorMin");
+          let name = $helpFuncs.get.nameInput(item);
+          let type = item.getAttribute("type");
 
-//                 } else if (errorMax) {
+          if (name == inputInfo.name && type == inputInfo.type && item.checked) {
 
-//                   // Установка текста ошибки по максимальному количеству символов
+            if (type == "checkbox" && !item.hasAttribute($dataAttrs.noValidate)) {
 
-//                   applySetText("errorMax");
+              values.push(item.value);
 
-//                 } else {
+            } else if (type == "radio") {
 
-//                   // Установка текста ошибки
+              values = item.value;
 
-//                   applySetText("error");
+            }
 
-//                 }
+          }
 
-//               } else {
+        }
 
-//                 // Если нет ошибки
+        if (min) {
 
-//                 if (classes.success && classes.error) {
+          if (values.length < min) {
 
-//                   applyClasses(currentElem, [classes.error], "remove");
-//                   applyClasses(currentElem, [classes.success], "add");
+            applyErrorSuccess({error: true});
+            errors.push(1);
 
-//                 } else {
+          } else {
 
-//                   applyStyle(currentElem, styles.error, "remove");
-//                   applyStyle(currentElem, styles.success, "add");
+            successSituation();
 
-//                 }
+          }
 
-//                 applySetText("success");
+        } else {
 
-//               }
+          if (inputInfo.type == "checkbox") {
 
-//             } else {
+            if (values.length > 0) {
 
-//               // Если нужно очистить поле
+              successSituation();
 
-//               if (classes.success && classes.error) {
+            } else if (values.length == 0 && !input.hasAttribute($dataAttrs.noValidate)) {
 
-//                 applyClasses(currentElem, [classes.success], "remove");
-//                 applyClasses(currentElem, [classes.error], "remove");
+              applyErrorSuccess({error: true});
+              errors.push(1);
 
-//               } else {
+            }
 
-//                 applyStyle(currentElem, styles.success, "remove");
-//                 applyStyle(currentElem, styles.error, "remove");
+          } else if (inputInfo.type == "radio") {
 
-//               }
+            if (values) {
 
-//               if (inputInfo.clear == "clear" || !inputInfo.clear) {
+              successSituation();
 
-//                 // Установка текста в дефолтное значение или очистка
+            } else {
 
-//                 applySetText("default");
+              applyErrorSuccess({error: true});
+              errors.push(1);
 
-//               } else if (inputInfo.clear == "notClear") {
+            }
 
-//                 // Текст не очищается, остается таким же каким ввел его пользователь
+          }
 
-//                 applySetText("notClear");
+        }
 
-//               }
+      } else {
 
-//             }
+        if (!value && !input.hasAttribute($dataAttrs.noValidate)) {
 
-//           }
+          applyErrorSuccess({error: true});
+          errors.push(1);
 
-//         },
-//         // Запись ошибок для проверки валидности формы и установка стилей для проверенных элементов
-//         setErrors: function(params) {
+        } else if (value && !input.hasAttribute($dataAttrs.noValidate)) {
 
-//           let input = params.input;
-//           let inputInfo = params.inputInfo;
-//           let warnBlocks = params.warnBlocks;
-//           let errors = params.errors;
-//           let mode = params.mode;
+          if ((input.hasAttribute($dataAttrs.value.min) || input.hasAttribute($dataAttrs.value.max)) && (value != successText && value != errorText && value != errorRegText && value != errorMinText && value != errorMaxText)) {
 
-//           if ((input && typeof input === "object") && (inputInfo && typeof inputInfo === "object") && (errors && typeof errors === "object") && (mode && typeof mode === "string")) {
+            let min;
+            let max;
 
-//             let successText = inputInfo.options.text.success;
-//             let errorText = inputInfo.options.text.error;
-//             let errorRegText = inputInfo.options.text.errorReg;
-//             let errorMinText = inputInfo.options.text.errorMin;
-//             let errorMaxText = inputInfo.options.text.errorMax;
-//             let inputs = inputInfo.otherInputs;
-//             let value = inputInfo.value;
-//             let applyErrorSuccess = function(params) {
+            if (input.getAttribute($dataAttrs.value.min)) {
 
-//               let error = params.error;
-//               let errorRegExp = params.errorRegExp;
-//               let errorMin = params.errorMin;
-//               let errorMax = params.errorMax;
+              min = Math.abs(parseInt(input.getAttribute($dataAttrs.value.min)));
 
-//               if (mode == "validate") {
-                
-//                 let options = {
-//                   input: input,
-//                   inputInfo: inputInfo,
-//                   warnBlocks: warnBlocks
-//                 };
-//                 let errorArray = [error, errorRegExp, errorMin, errorMax];
-//                 let errorNameArray = ["error", "errorRegExp", "errorMin", "errorMax"];
+            }
 
-//                 if (typeof error === "boolean") {
+            if (input.getAttribute($dataAttrs.value.max)) {
 
-//                   options.errorParams = {
-//                     error: null,
-//                     errorRegExp: null,
-//                     errorMin: null,
-//                     errorMax: null
-//                   }
+              max = Math.abs(parseInt(input.getAttribute($dataAttrs.value.max)));
 
-//                   for (let i = 0; i < errorArray.length; i++) {
+            }
 
-//                     if (errorArray[i] == true) {
+            let applyErrorMin = function() {
 
-//                       options.errorParams[errorNameArray[i]] = errorArray[i];
 
-//                     }
+              applyErrorSuccess({
+                error: true,
+                errorMin: true
+              });
+              errors.push(1);
 
-//                   }
+            };
+            let applyErrorMax = function() {
 
-//                 }
+              applyErrorSuccess({
+                error: true,
+                errorMax: true
+              });
+              errors.push(1);
 
-//                 helpFuncs.errors.addErrorSuccess(options);
+            };
 
-//               }
+            if (min && max) {
 
-//             };
+              if (value.length < min) {
 
-//             if (inputInfo.type == "checkbox" || inputInfo.type == "radio") {
+                applyErrorMin();
 
-//               // Проверка для чекбоксов и радио кнопок
+              } else if (value.length > max) {
 
-//               let values;
-//               let min;
-//               let successSituation = function() {
+                applyErrorMax();
 
-//                 if (input.checked && !input.hasAttribute(dataAttr.noValidate)) {
+              } else if (value.length >= min && value.length <= max) {
 
-//                   applyErrorSuccess({
-//                     error: false
-//                   });
+                applyErrorSuccess({error: false});
 
-//                 } else {
+              }
 
-//                   applyErrorSuccess();
+            } else if (min && !max) {
 
-//                 }
+              if (value.length < min) {
 
-//               }
+                applyErrorMin();
 
-//               if (inputInfo.type == "checkbox") {
+              } else {
 
-//                 values = [];
-//                 min = input.getAttribute(dataAttr.minCheck);
+                applyErrorSuccess({
+                  error: false
+                });
 
-//               }
+              }
 
-//               for (let item of inputs) {
+            } else if (max && !min) {
 
-//                 let name = helpFuncs.getNameInput(item);
-//                 let type = item.getAttribute("type");
+              if (value.length > max) {
 
-//                 if (name == inputInfo.name && type == inputInfo.type && item.checked) {
+                applyErrorMax();
 
-//                   if (type == "checkbox" && !item.hasAttribute(dataAttr.noValidate)) {
+              } else {
 
-//                     values.push(item.value);
+                applyErrorSuccess({
+                  error: false
+                });
 
-//                   } else if (type == "radio") {
+              }
 
-//                     values = item.value;
+            } else if (!min && !max) {
 
-//                   }
 
-//                 }
 
-//               }
+            }
 
-//               if (min) {
+          } else {
 
-//                 // Если есть минимальное допустимое количество отмеченных чекбоксов
+            if (value == successText || value == errorText || value == errorRegText || value == errorMinText || value == errorMaxText) {
 
-//                 if (values.length < min) {
+              applyErrorSuccess({
+                error: true
+              });
+              errors.push(1);
 
-//                   applyErrorSuccess({
-//                     error: true
-//                   });
-//                   errors.push(1);
+            } else {
 
-//                 } else {
+              let pattern = inputInfo.params.regExp.pattern;
 
-//                   successSituation();
+              if (pattern) {
 
-//                 }
+                let regRules = pattern.split(", ");
+                let regExp = new RegExp(regRules[0], regRules[1]);
 
-//               } else {
+                if (regExp.test(value)) {
 
-//                 // Если нет минимального допустимого количества отмеченных чекбоксов
+                  applyErrorSuccess({
+                    error: false
+                  });
 
-//                 if (inputInfo.type == "checkbox") {
+                } else {
 
-//                   if (values.length > 0 ) {
+                  applyErrorSuccess({
+                    error: true,
+                    errorRegExp: true
+                  });
+                  errors.push(1);
 
-//                     successSituation();
+                }
 
-//                   } else if (values.length == 0 && !input.hasAttribute(dataAttr.noValidate)) {
+              } else {
 
-//                     applyErrorSuccess({
-//                       error: true
-//                     });
-//                     errors.push(1);
+                applyErrorSuccess({
+                  error: false
+                });
 
-//                   }
+              }
 
-//                 } else if (inputInfo.type == "radio") {
+            }
 
-//                   if (values) {
+          }
 
-//                     successSituation();
+        }
 
-//                   } else {
+      }
 
-//                     applyErrorSuccess({
-//                       error: true
-//                     });
-//                     errors.push(1);
+    }
 
-//                   }
+  }
+  __validateInput(params) {
 
-//                 }
+    let input = params.input;
+    let form = params.form;
+    let formParams = params.formParams;
+    let mode = params.mode;
 
-//               }
+    if ((input && typeof input === "object") && (form && typeof form === "object") && (mode && typeof mode === "string")) {
 
-//             } else {
+      let $dataAttrs = this.dataAttrs;
+      let $helpFuncs = this.helpFuncs;
+      let inputInfo = {
+        tag: input.tagName.toLowerCase(),
+        type: null,
+        value: null,
+        name: $helpFuncs.get.nameInput(input),
+        params: {
+          text: {
+            success: null,
+            error: null,
+            errorReg: null,
+            default: null,
+            errorMin: null,
+            errorMax: null
+          },
+          regExp: {
+            pattern: null
+          }
+        },
+        otherInputs: form.info.inputs
+      };
 
-//               // Проверка остальных элементов
+      switch (inputInfo.tag) {
+        case "input":
+          inputInfo.type = input.getAttribute("type");
 
-//               if (!value && !input.hasAttribute(dataAttr.noValidate)) {
+          let type = inputInfo.type;
 
-//                 // Если нет значения и нет атрибута позволяющего не валидировать поле
+          if (type == "text" || type == "email" || type == "tel" || type == "number" || type == "password" || type == "hidden" || type == "range" || type == "search" || type == "url") {
 
-//                 applyErrorSuccess({
-//                   error: true
-//                 });
-//                 errors.push(1);
+            inputInfo.value = input.value;
 
-//               } else if (value && !input.hasAttribute(dataAttr.noValidate)) {
+          } else if (type == "file") {
 
-//                 // Если есть значение и нет атрибута позволяющего не валидировать поле
+            if (input.files.length > 0) {
 
-//                 if ((input.hasAttribute(dataAttr.value.min) || input.hasAttribute(dataAttr.value.max)) && (value != successText && value != errorText && value != errorRegText && value != errorMinText && value != errorMaxText)) {
+              if (input.hasAttribute("multiple")) {
 
-//                   // Если есть минимальное или максимальное количество символов у значения
+                inputInfo.value = {};
 
-//                   let min;
-//                   let max;
+                for (let i in input.files) {
 
-//                   if (input.getAttribute(dataAttr.value.min)) {
+                  inputInfo.value[i] = (typeof input.files[i] === "object") ? input.files[i];
 
-//                     min = Math.abs(parseInt(input.getAttribute(dataAttr.value.min)));
+                }
 
-//                   };
+              } else {
 
-//                   if (input.getAttribute(dataAttr.value.max)) {
+                inputInfo.value = input.files[0];
 
-//                     max = Math.abs(parseInt(input.getAttribute(dataAttr.value.max)));
+              }
 
-//                   }
+            }
 
-//                   let applyErrorMin = function() {
+          }
 
-//                     applyErrorSuccess({
-//                       error: true,
-//                       errorMin: true
-//                     });
-//                     errors.push(1);
+          break;
+        case "textarea":
+          inputInfo.type = "textarea";
+          inputInfo.value = input.value;
+          break;
+        case "select":
+          inputInfo.type = "select";
+          inputInfo.value = input.value;
+          break;
+        default:
+          inputInfo.type = "custom";
+          inputInfo.value = input.getAttribute($dataAttrs.customValue);
+          break;
+      }
 
-//                   };
-//                   let applyErrorMax = function() {
+      for (let item of ["text", "regExp"]) {
 
-//                     applyErrorSuccess({
-//                       error: true,
-//                       errorMax: true
-//                     });
-//                     errors.push(1);
+        $helpFuncs.set.inputParams({
+          input: input,
+          inputInfo: inputInfo,
+          formName: form.name,
+          param: item
+        });
 
-//                   };
+      }
 
-//                   if (min && max) {
+      if (mode == "validate" || mode == "data") {
 
-//                     if (value.length < min) {
+        this.__setData(inputInfo, formParams.data);
 
-//                       applyErrorMin();
+      }
 
-//                     } else if (value.length > max) {
+      if (mode != "data") {
 
-//                       applyErrorMax();
+        this.__setErrors({
+          input: input,
+          inputInfo: inputInfo,
+          warnBlocks: form.info.warnBlocks,
+          errors: formParams.errors,
+          mode: mode
+        });
 
-//                     } else if (value.length >= min && value.length <= max) {
+      }
 
-//                       applyErrorSuccess({
-//                         error: false
-//                       });
+    }
 
-//                     }
+  }
 
-//                   } else if (min && !max) {
+  validate(formName, mode) {
 
-//                     if (value.length < min) {
+    if ((formName && typeof formName === "string") && (mode == "validate" || mode == "valid" || mode == "data")) {
 
-//                       applyErrorMin();
+      let $containers = this.info.containers;
+      let $options = this.info.options;
+      let $dataAttrs = this.dataAttrs;
 
-//                     } else {
+      for (let i in $containers) {
 
-//                       applyErrorSuccess({
-//                         error: false
-//                       });
+        let $info = $containers[i];
+        let currentFormName = $info.el.getAttribute($dataAttrs.name.form);
+        let clearForm = $info.el.getAttribute($dataAttrs.clearForm);
 
-//                     }
+        if (currentFormName == formName) {
 
-//                   } else if (max && !min) {
+          let params = {
+            errors: [],
+            valid: false,
+            data: {
+              name: formName,
+              inputs: {}
+            }
+          };
 
-//                     if (value.length > max) {
+          for (let input of $info.inputs) {
 
-//                       applyErrorMax();
+            this.__validateInput({
+              input: input,
+              form: {
+                name: formName,
+                info: $info
+              },
+              formParams: params,
+              mode: mode
+            });
 
-//                     } else {
+          }
 
-//                       applyErrorSuccess({
-//                         error: false
-//                       });
+          if (params.errors.length == 0) {
 
-//                     }
+            params.valid = true;
 
-//                   } else if (!min && !mix) {
+            if ($options.ajax == false && mode == "validate") {
 
-//                     console.error();
+              setTimeout(function() {
 
-//                   }
+                location.reload();
 
-//                 } else {
+              }, $options.timeouts.send);
 
-//                   // Если нет минимального или максимального количества символов у значения
+            } else if ($options.ajax) {
 
-//                   if (value == successText || value == errorText || value == errorRegText || value == errorMinText || value == errorMaxText) {
+              if (clearForm != "false") {
 
-//                     // Если значение похоже на тексты ошибок
+                setTimeout(function() {
 
-//                     applyErrorSuccess({
-//                       error: true
-//                     });
-//                     errors.push(1);
+                  this.clearForm({
+                    name: formName,
+                    info: $info
+                  });
 
-//                   } else {
+                }, $options.timeouts.send);
 
-//                     // Если значение не похоже на тексты ошибок
+              }
 
-//                     let pattern = inputInfo.options.regExp.pattern;
+            }
 
-//                     if (pattern) {
+          } else {
 
-//                       // Если есть проверка значения по регулярному выражению
 
-//                       let regRules = pattern.split(", ");
-//                       let regExp = new RegExp(regRules[0], regRules[1]);
 
-//                       if (regExp.test(value)) {
+          }
 
-//                         // Если значение удовлетворяет регулярному выражению
+          if (mode == "valid") {
 
-//                         applyErrorSuccess({
-//                           error: false
-//                         });
+            return params.valid;
 
-//                       } else {
+          } else if (mode == "data") {
 
-//                         // Если значение не удовлетворяет регулярному выражению
+            return params.data.inputs;
 
-//                         applyErrorSuccess({
-//                           error: true,
-//                           errorRegExp: true
-//                         });
-//                         errors.push(1);
+          }
 
-//                       }
+        }
 
-//                     } else {
+      }
 
-//                       // Если поле заполенено и нет проверки по регулярному выражению
+    }
 
-//                       applyErrorSuccess({
-//                         error: false
-//                       });
+  }
 
-//                     }
+  __writeText(params) {
 
-//                   }
+    let input = params.input;
+    let elem = params.elem;
+    let textParams = params.textParams;
+    let typeText = params.typeText;
+    let elemPlace = params.elemPlace;
+    let inputPlace = params.inputPlace;
 
-//                 }
+    if ((input && typeof input === "object") && (elem && typeof elem === "object") && (textParams && typeof textParams === "object") && (typeText && typeof typeText === "string") && (elemPlace && typeof elemPlace === "string")) {
 
-//               }
+      let currentParam = textParams[typeText];
+      let errorParam = textParams.error;
+      let $dataAttrs = this.dataAttrs;
+      let setDefaultValue = function(elem, place, value) {
 
-//             }
+        if ((elem && typeof elem === "object") && (place && typeof place === "string")) {
 
-//           }
+          if (elem.hasAttribute($dataAttrs.customValue)) {
 
-//         }
-//       },
-//       clear: {
-//         // Очистка поля ввода
-//         clearInput: function(input, formName, mode) {
+            elem.setAttribute($dataAttrs.customValue, value);
 
-//           if ((input && typeof input === "object") && (formName && typeof formName === "string") && (mode && typeof mode === "string")) {
+          } else {
 
-//             let inputInfo = {
-//               tag: input.tagName.toLowerCase(),
-//               type: null,
-//               name: helpFuncs.getNameInput(input),
-//               value: null,
-//               clear: null,
-//               options: {
-//                 text: {
-//                   success: null,
-//                   error: null,
-//                   errorReg: null,
-//                   default: null,
-//                   errorMin: null,
-//                   errorMax: null
-//                 }
-//               }
-//             };
-//             let warnBlocks;
-//             let getWarnBlocks = function() {
+            elem[place] = value;
 
-//               let warnBlocks;
+          }
 
-//               for (let i in moduleInfo.containers) {
+        }
 
-//                 let containerInfo = moduleInfo.containers[i];
-//                 let currentFormName = containerInfo.element.getAttribute(dataAttr.name.form);
+      };
+      let setDefaultOtherValue = function(elem, place) {
 
-//                 if (currentFormName == formName) {
+        if ((elem && typeof elem === "object") && (place && typeof place === "string")) {
 
-//                   warnBlocks = containerInfo.warnBlocks;
+          if (place == "option") {
 
-//                 }
+            elem.options[0].selected = true;
 
+          } else if (place == "checked") {
 
-//               }
+            elem.checked = false;
 
-//               return warnBlocks;
+          } else if (place == "file" || place == "range") {
 
-//             };
-//             let clearValue = function(place) {
+            elem.value = null;
 
-//               if (place && typeof place === "string") {
+          }
 
-//                 let successText = inputInfo.options.text.success;
-//                 let errorText = inputInfo.options.text.error;
-//                 let errorRegText = inputInfo.options.text.errorReg;
-//                 let errorMinText = inputInfo.options.text.errorMin;
-//                 let errorMaxText = inputInfo.options.text.errorMax;
-//                 let value;
+        }
 
-//                 if (place != "custom") {
+      };
+      let clearInputPlace = function() {
 
-//                   value = input[place];
+        if (inputPlace && typeof inputPlace === "string") {
 
-//                 } else {
+          if (inputPlace != "option" && inputPlace != "checked" && inputPlace != "file" && inputPlace != "range") {
 
-//                   value = input.getAttribute(dataAttr.customValue);
+            setDefaultValue(input, inputPlace, "");
 
-//                 }
+          } else {
 
-//                 if (mode == "all") {
+            setDefaultOtherValue(input, inputPlace);
 
-//                   // Режим для очистки всей формы
+          }
 
-//                   inputInfo.clear = "clear";
+        }
 
-//                 } else if (mode == "single") {
+      };
 
-//                   // Режим для очистки одного поля
+      if (typeText == "errorReg" || typeText == "errorMin" || typeText == "errorMax") {
 
-//                   if (!value || (value && (value == successText || value == errorText || value == errorRegText || value == errorMinText || value == errorMaxText))) {
+        if (elemPlace != "option" && elemPlace != "checked" && elemPlace != "file" && elemPlace != "range") {
 
-//                     // Если значение поля отсутствует или идентично сообщениям об ошибке
+          if (currentParam) {
 
-//                     inputInfo.clear = "clear";
+            elem[elemPlace] = currentParam;
 
-//                   } else {
+          } else {
 
-//                     // Если значение поля уникально
+            elem[elemPlace] = errorParam;
 
-//                     inputInfo.clear = "notClear";
+          }
 
-//                   }
+          clearInputPlace();
 
-//                 }
+        }
 
-//               }
+      } else if (typeText == "default") {
 
-//             };
+        if (elemPlace != "option" && elemPlace != "checked" && elemPlace != "file" && elemPlace != "range") {
 
-//             switch (inputInfo.tag) {
-//               case "input":
-//                 inputInfo.type = input.getAttribute("type");
-//                 break;
-//               case "textarea":
-//                 inputInfo.type = "textarea";
-//                 break;
-//               case "select":
-//                 inputInfo.type = "select";
-//                 break;
-//               default:
-//                 inputInfo.type = "custom";
-//                 break;
-//             }
+          if (currentParam) {
 
-//             helpFuncs.getOptions({
-//               input: input,
-//               inputInfo: inputInfo,
-//               formName: formName,
-//               option: "text"
-//             });
+            setDefaultValue(elem, elemPlace, currentParam);
 
-//             switch (inputInfo.tag) {
-//               case "input":
-//                 clearValue("value");
-//                 break;
-//               case "textarea":
-//                 clearValue("value");
-//                 break;
-//               case "select":
-//                 clearValue("value");
-//                 break;
-//               default:
-//                 clearValue("custom");
-//                 break;
-//             }
+          } else {
 
-//             warnBlocks = getWarnBlocks();
-//             helpFuncs.errors.addErrorSuccess({
-//               input: input,
-//               inputInfo: inputInfo,
-//               warnBlocks: warnBlocks
-//             });
+            setDefaultValue(elem, elemPlace, "");
 
-//           }
+          }
 
-//         },
-//         clearForm: function(form) {
+          clearInputPlace();
 
-//           if (form && typeof form === "object") {
+        } else {
 
-//             for (let input of form.info.inputs) {
+          setDefaultOtherValue(elem, elemPlace);
 
-//               helpFuncs.clear.clearInput(input, form.name, "all");
+        }
 
-//             }
+      } else if (typeText == "notClear") {
 
-//           }
+      } else {
 
-//         },
-//         applyClear: function() {
+        if (currentParam && (elemPlace != "option" && elemPlace != "checked" && elemPlace != "file" && elemPlace != "range")) {
 
-//           if (elems.inputs) {
+          elem[elemPlace] = currentParam;
 
-//             for (let input of elems.inputs) {
+        }
 
-//               input.addEventListener("focus", function() {
+      }
 
-//                 let form = findCurrentParent(input, elemsClasses.container);
-//                 let formName = form.getAttribute(dataAttr.name.form);
+    }
 
-//                 helpFuncs.clear.clearInput(input, formName, "single");
+  }
 
-//               });
+  __setText(params) {
 
-//             }
+    let input = params.input;
+    let elem = params.currentElem;
+    let inputInfo = params.inputInfo;
+    let typeText = params.typeText;
 
-//           }
+    if ((input && typeof input === "object") && (elem && typeof elem === "object") && (inputInfo && typeof inputInfo === "object") && (typeText && typeof typeText === "string")) {
 
-//         }
-//       },
-//       // Запись значения поля в объект с данными формы
-//       setData: function(inputInfo, data) {
+      let $elemsClasses = this.info.elemsClasses;
+      let applyWriteText = function(place) {
 
-//         if ((inputInfo && typeof inputInfo === "object") && (data && typeof data === "object") && inputInfo.name) {
+        if (place && typeof place === "string") {
 
-//           let successText = inputInfo.options.text.success;
-//           let errorText = inputInfo.options.text.error;
-//           let errorRegText = inputInfo.options.text.errorReg;
-//           let value = inputInfo.value;
+          let params = {
+            input: input,
+            elem: elem,
+            textParams: inputInfo.params.text,
+            typeText: typeText,
+            elemPlace: null,
+            inputPlace: null
+          };
 
-//           if (inputInfo.type == "checkbox" || inputInfo.type == "radio") {
+          if (elem.classList.contains($elemsClasses.warnBlocks)) {
 
-//             let inputs = inputInfo.otherInputs;
-//             let values;
+            params.elemPlace = "innerText";
+            params.inputPlace = place;
 
-//             if (inputInfo.type == "checkbox") {
+          } else {
 
-//               values = [];
+            params.elemPlace = place;
 
-//             };
+          }
 
-//             for (let input of inputs) {
+          this.__writeText(params);
 
-//               let name = helpFuncs.getNameInput(input);
-//               let type = input.getAttribute("type");
+        }
 
-//               if (name == inputInfo.name && type == inputInfo.type && input.checked) {
+      };
 
-//                 if (type == "checkbox") {
+      switch (inputInfo.tag) {
+        case "input":
 
-//                   values.push(input.value);
+          let type = inputInfo.type;
 
-//                 } else if (type == "radio") {
+          if (type == "text" || type == "email" || type == "tel" || type == "number" || type == "password" || type == "hidden" || type == "search" || type == "url") {
 
-//                   values = input.value;
+            applyWriteText("value");
 
-//                 }
+          } else if (type == "checkbox" || type == "radio") {
 
-//               }
+            applyWriteText("checked");
 
-//             }
+          } else if (type == "file") {
 
-//             data.inputs[inputInfo.name] = values;
+            applyWriteText("file");
 
-//           } else {
+          } else if (type == "range") {
 
-//             if (value == successText || value == errorText || value == errorRegText) {
+            applyWriteText("range");
 
-//               data.inputs[inputInfo.name] = "";
+          }
 
-//             } else {
+          break;
+        case "textarea":
+          applyWriteText("value");
+          break;
+        case "select":
+          applyWriteText("option");
+          break;
+        default:
+          applyWriteText("innerText");
+          break;
+      }
 
-//               data.inputs[inputInfo.name] = value;
+    }
 
-//             }
+  }
 
-//           }
+  __addErrorSuccess(params) {
 
-//         }
+    let input = params.input;
+    let inputInfo = params.inputInfo;
+    let warnBlocks = params.warnBlocks;
+    let errorParams = params.errorParams;
 
-//       },
-//       validateInput: function(params) {
+    if ((input && typeof input === "object") && (inputInfo && typeof inputInfo === "object")) {
 
-//         let input = params.input;
-//         let form = params.form;
-//         let formParams = params.formParams;
-//         let mode = params.mode;
+      let currentElem = input;
+      let $classes = this.info.params.classes;
+      let $dataAttrs = this.$dataAttrs;
+      let $styles = this.styles;
+      let applySetText = function(typeText) {
 
-//         if ((input && typeof input === "object") && (form && typeof form === "object") && (mode && typeof mode === "string")) {
+        if (typeText && typeof typeText === "string") {
 
-//           let inputInfo = {
-//             tag: input.tagName.toLowerCase(),
-//             type: null,
-//             value: null,
-//             name: helpFuncs.getNameInput(input),
-//             options: {
-//               text: {
-//                 success: null,
-//                 error: null,
-//                 errorReg: null,
-//                 default: null,
-//                 errorMin: null,
-//                 errorMax: null
-//               },
-//               regExp: {
-//                 pattern: null
-//               }
-//             },
-//             otherInputs: form.info.inputs
-//           };
+          this.__setText({
+            input: input,
+            currentElem: currentElem,
+            inputInfo: inputInfo,
+            typeText: typeText
+          });
 
-//           switch (inputInfo.tag) {
-//             case "input":
-//               inputInfo.type = input.getAttribute("type");
+        }
 
-//               let type = inputInfo.type;
+      };
 
-//               if (type == "text" || type == "email" || type == "tel" || type == "number" || type == "password" || type == "hidden" || type == "range" || type == "search" || type == "url") {
+      if (warnBlocks) {
 
-//                 inputInfo.value = input.value;
+        for (let warnBlock of warnBlocks) {
 
-//               } else if (type == "file") {
+          currentElem = (warnBlock.getAttribute($dataAttrs.name.warn) == inputInfo.name) ? warnBlock : input;
 
-//                 if (input.files.length > 0) {
+        }
 
-//                   if (input.hasAttribute("multiple")) {
+      }
 
-//                     inputInfo.value = {};
+      if (errorParams) {
 
-//                     for (let i in input.files) {
+        let error = errorParams.error;
+        let errorRegExp = errorParams.errorRegExp;
+        let errorMin = errorParams.errorMin;
+        let errorMax = errorParams.errorMax;
 
-//                       let file = input.files[i];
+        if (error) {
 
-//                       if (typeof file === "object") {
+          if ($classes.success && $classes.error) {
 
-//                         inputInfo.value[i] = file;
+            applyClasses(currentElem, [$classes.success], "remove");
+            applyClasses(currentElem, [$classes.error], "add");
 
-//                       }
+          } else {
 
-//                     }
+            applyStyle(currentElem, $styles.success, "remove");
+            applyStyle(currentElem, $styles.error, "add");
 
-//                   } else {
+          }
 
-//                     inputInfo.value = input.files[0];
+          if (errorRegExp) {
 
-//                   }
+            applySetText("errorReg");
 
-//                 }
+          } else if (errorMin) {
 
-//               }
+            applySetText("errorMin");
 
-//               break;
-//             case "textarea":
-//               inputInfo.type = "textarea";
-//               inputInfo.value = input.value;
-//               break;
-//             case "select":
-//               inputInfo.type = "select";
-//               inputInfo.value = input.value;
-//               break;
-//             default:
-//               inputInfo.type = "custom";
-//               inputInfo.value = input.getAttribute(dataAttr.customValue);
-//               break;
-//           }
+          } else if (errorMax) {
 
-//           for (let item of ["text", "regExp"]) {
+            applySetText("errorMax");
 
-//             helpFuncs.getOptions({
-//               input: input,
-//               inputInfo: inputInfo,
-//               formName: form.name,
-//               option: item
-//             });
+          } else {
 
-//           }
+            applySetText("error");
 
-//           if (mode == "validate" || mode == "data") {
+          }
 
-//             helpFuncs.setData(inputInfo, formParams.data);
+        } else {
 
-//           }
+          if ($classes.success && $classes.error) {
 
-//           if (mode != "data") {
+            applyClasses(currentElem, [$classes.success], "add");
+            applyClasses(currentElem, [$classes.error], "remove");
 
-//             helpFuncs.errors.setErrors({
-//               input: input,
-//               inputInfo: inputInfo,
-//               warnBlocks: form.info.warnBlocks,
-//               errors: formParams.errors,
-//               mode: mode
-//             });
+          } else {
 
-//           }
+            applyStyle(currentElem, $styles.success, "add");
+            applyStyle(currentElem, $styles.error, "remove");
 
-//         };
+          }
 
-//       },
-//       addFunc: function(func, nameArray) { // Функция, позволяющая записывать в массив функцию или массив с функциями
+          applySetText("success");
 
-//         if (func && (nameArray && typeof nameArray === "string")) {
+        }
 
-//           if (typeof func === "function") {
+      } else {
 
-//             funcs[nameArray].push(func);
+        if ($classes.success && $classes.error) {
 
-//           } else if (typeof func === "object") {
+          applyClasses(currentElem, [$classes.success, $classes.error], "remove");
 
-//             for (let item of func) {
+        } else {
 
-//               if (typeof item === "function") {
+          applyStyle(currentElem, $styles.success, "remove");
+          applyStyle(currentElem, $styles.error, "remove");
 
-//                 funcs[nameArray].push(item);
+        }
 
-//               }
+        if (inputInfo.clear == "clear" || !inputInfo.clear) {
 
-//             }
+          applySetText("default");
 
-//           }
+        } else if (inputInfo.clear == "notClear") {
 
-//         }
+          applySetText("notClear");
 
-//       },
-//       applyFunc: function(data, nameArray) { // Функция, позволяющая пробегаться по массиву с функциями и выполнять каждую из них.
+        }
 
-//         if ((data && typeof data === "object") && (funcs[nameArray].length > 0)) {
+      }
 
-//           for (let item of funcs[nameArray]) {
+    }
 
-//             item(data);
+  }
 
-//           }
+  clearForm(form) {
 
-//         }
+    if (form) {
 
-//       }
-//     };
+      let $module = this;
+      let $dataAttrs = this.dataAttrs;
 
-//     // End Вспомогательные функции
+      if (typeof form === "string") {
 
-//     // Добавление пользовательских функций, которые будут исполены если форма не прошла проверку
+        let $containers = this.info.containers;
 
-//     module.errorValidation = function(func) {
+        for (let i in $containers) {
 
-//       helpFuncs.addFunc(func, "error");
+          let $info = $containers[i];
+          let currentFormName = $info.el.getAttribute($dataAttrs.name.form);
 
-//     };
+          if (form == currentFormName) {
 
-//     // End Добавления пользовательских функций, которые будут исполены если форма не прошла проверку
+            for (let input of $info.inputs) {
 
-//     // Удаление пользовательских функций, которые исполеняются если форма не прошла проверку
+              $module.__clearInput(input, form, "all");
 
-//     module.removeErrorFuncs = function() {
+            }
 
-//       funcs.error = [];
+          }
 
-//     };
+        }
 
-//     // End Удаление пользовательских функций, которые исполеняются если форма не прошла проверку
+      } else if (typeof form === "object") {
 
-//     // Исполнение пользовательских функций, когда форма не прошла валидацию
+        for (let input of form.info.inputs) {
 
-//     module.applyErrorValidation = function(data) {
+          $module.__clearInput(input, form.name, "all");
 
-//       helpFuncs.applyFunc(data, "error");
+        }
 
-//     };
+      }
 
-//     // End Исполнение пользовательских функций, когда форма не прошла валидацию
+    }
 
-//     // Добавление пользовательских функций, которые будут исполены если форма прошла проверку
+  }
 
-//     module.successValidation = function(func) {
+  __clearInput(input, formName, mode) {
 
-//       helpFuncs.addFunc(func, "success");
+    if ((input && typeof input === "object") && (formName && typeof formName === "string") && (mode && typeof mode === "string")) {
 
-//     };
+      let $dataAttrs = this.dataAttrs;
+      let $helpFuncs = this.helpFuncs;
+      let inputInfo = {
+        tag: input.tagName.toLowerCase(),
+        type: null,
+        name: $helpFuncs.get.nameInput(input),
+        value: null,
+        clear: null,
+        params: {
+          text: {
+            success: null,
+            error: null,
+            errorReg: null,
+            default: null,
+            errorMin: null,
+            errorMax: null
+          }
+        }
+      };
+      let clearValue = function(place) {
 
-//     // End Добавление пользовательских функций, которые будут исполены если форма прошла проверку
+        if (place && typeof place === "string") {
 
-//     // Удаление пользовательских функций, которые исполеняются если форма прошла проверку
+          let successText = inputInfo.params.text.success;
+          let errorText = inputInfo.params.text.error;
+          let errorRegText = inputInfo.params.text.errorReg;
+          let errorMinText = inputInfo.params.text.errorMin;
+          let errorMaxText = inputInfo.params.text.errorMax;
+          let value = (place != "custom") ? input[place] : input.getAttribute($dataAttrs.customValue);
 
-//     module.removeSuccessFuncs = function() {
+          if (mode == "all") {
 
-//       funcs.success = [];
+            inputInfo.clear = "clear";
 
-//     };
+          } else if (mode == "single") {
 
-//     // End Удаление пользовательских функций, которые исполеняются если форма прошла проверку
+            if (!value || (value && (value == successText || value == errorText || value == errorRegText || value == errorMinText || value == errorMaxText))) {
 
-//     // Исполнение пользовательских функций, когда форма прошла валидацию
+              inputInfo.clear = "clear";
 
-//     module.applySuccessValidation = function(data) {
+            } else if (value) {
 
-//       helpFuncs.applyFunc(data, "success");
+              inputInfo.clear = "notClear";
 
-//     };
+            }
 
-//     // End Исполнение пользовательских функций, когда форма прошла валидацию
+          }
 
-//     // Очистка формы
+        }
 
-//     module.clearForm = function(formName) {
+      };
 
-//       if (formName && typeof formName === "string") {
+      switch (inputInfo.tag) {
+        case "input":
+          inputInfo.type = input.getAttribute("type");
+          break;
+        case "textarea":
+          inputInfo.type = "textarea";
+          break;
+        case "select":
+          inputInfo.type = "select";
+          break;
+        default:
+          inputInfo.type = "custom";
+          break;
+      }
 
-//         for (let i in moduleInfo.containers) {
+      $helpFuncs.set.inputParams({
+        input: input,
+        inputInfo: inputInfo,
+        formName: formName,
+        option: "text"
+      });
 
-//           let currentFormName = moduleInfo.containers[i].element.getAttribute(dataAttr.name.form);
+      switch (inputInfo.tag) {
+        case "input":
+          clearValue("value");
+          break;
+        case "textarea":
+          clearValue("value");
+          break;
+        case "select":
+          clearValue("value");
+          break;
+        default:
+          clearValue("custom");
+          break;
+      }
 
-//           if (formName == currentFormName) {
+      this.__addErrorSuccess({
+        input: input,
+        inputInfo: inputInfo,
+        warnBlocks: $helpFuncs.get.warnBlocks(formName)
+      });
 
-//             helpFuncs.clear.clearForm({
-//               name: formName,
-//               info: moduleInfo.containers[i]
-//             });
+    }
 
-//           }
+  }
 
-//         }
-
-//       }
-
-//     };
-
-//     // End Очистка формы
-
-//     // Установка дефолтных параметров
-
-//     module.setParams = function() {
-
-//       // WarnBlocks class
-
-//       if (params.warnBlocks && typeof params.warnBlocks === "string") {
-
-//         elemsClasses.warnBlock = params.warnBlocks;
-
-//       }
-
-//       // End WarnBlocks class
-
-//       // SubmitBtns class
-
-//       if (params.submitBtns && typeof params.submitBtns === "string") {
-
-//         elemsClasses.submitBtn = params.submitBtns;
-
-//       }
-
-//       // End SubmitBtns class
-
-//       // Dynamic
-
-//       if (params.dynamic == true) {
-
-//         options.dynamic = params.dynamic;
-
-//       }
-
-//       // End Dynaimc
-
-//       // Ajax
-
-//       if (params.ajax == true) {
-
-//         options.ajax = params.ajax;
-
-//       }
-
-//       // End Ajax
-
-//       // Classes
-
-//       if (params.defaultSuccessClass == true) {
-
-//         options.classes.success = successClass;
-
-//       }
-
-//       if (params.defaultErrorClass == true) {
-
-//         options.classes.error = errorClass;
-
-//       }
-
-//       if (params.defaultClasses == true) {
-
-//         options.classes.success = successClass;
-//         options.classes.error = errorClass;
-
-//       }
-
-//       if (params.successClass && typeof params.successClass === "string") {
-
-//         options.classes.success = params.successClass;
-
-//       }
-
-//       if (params.errorClass && typeof params.errorClass === "string") {
-
-//         options.classes.error = params.errorClass;
-
-//       }
-
-//       // End Classes
-
-//       // Send timeout
-
-//       if (params.sendTimeout && typeof params.sendTimeout === "number") {
-
-//         options.timeouts.send = Math.abs(params.sendTimeout);
-
-//       }
-
-//       // End Send timeout
-
-//       // Clear timeout
-
-//       if (params.clearTimeout && typeof params.clearTimeout === "number") {
-
-//         options.timeouts.clear = Math.abs(params.clearTimeout);
-
-//       }
-
-//       // End Clear timeout
-
-//       // Ruless
-
-//       if (params.rules && typeof params.rules === "object") {
-
-//         moduleInfo.rules = params.rules;
-
-//       }
-
-//       // End Ruless
-
-//     };
-
-//     // End Установка дефолтных параметров
-
-//     // Нахождение всех форм на странице
-
-//     module.findContainers = function() {
-
-//       let containers = findElemsClass(elemsClasses.container, document);
-
-//       elems.containers = containers;
-
-//       if (containers) {
-
-//         for (let i in containers) {
-
-//           let item = containers[i];
-
-//           if (typeof item === "object") {
-
-//             moduleInfo.containers[i] = {
-//               element: item,
-//               inputs: null,
-//               warnBlocks: null
-//             }
-
-//           }
-
-//         }
-
-//       }
-
-//     };
-
-//     // End Нахождение всех форм на странице
-
-//     // Нахождение всех полей ввода на странице
-
-//     module.findInputs = function() {
-
-//       elems.inputs = findElemsClass(elemsClasses.input, document);
-
-//       for (let i in moduleInfo.containers) {
-
-//         let containerInfo = moduleInfo.containers[i];
-
-//         if (containerInfo && typeof containerInfo === "object") {
-
-//           let inputs = findElemsClass(elemsClasses.input, containerInfo.element);
-
-//           if (inputs) {
-
-//             containerInfo.inputs = inputs;
-
-//           }
-
-//         }
-
-//       }
-
-//     };
-
-//     // End Нахождение всех полей ввода на странице
-
-//     // Нахождение всех блоков спредепреждениями на странице
-
-//     module.findWarnBlocks = function() {
-
-//       if (elemsClasses.warnBlock) {
-
-//         for (let i in moduleInfo.containers) {
-
-//           let containerInfo = moduleInfo.containers[i];
-
-//           if (containerInfo && typeof containerInfo === "object") {
-
-//             let warnBlocks = findElemsClass(elemsClasses.warnBlock, containerInfo.element);
-
-//             if (warnBlocks) {
-
-//               containerInfo.warnBlocks = warnBlocks;
-
-//             }
-
-//           }
-
-//         }
-
-//       }
-
-//     };
-
-//     // End Нахождение всех блоков спредепреждениями на странице
-
-//     // Нахождение всех кнопок проверки на странице
-
-//     module.findSubmitBtns = function() {
-
-//       if (elemsClasses.submitBtn) {
-
-//         let btns = findElemsClass(elemsClasses.submitBtn, document);
-
-//         if (btns) {
-
-//           elems.btns = btns;
-
-//         }
-
-//       }
-
-//     };
-
-//     // End Нахождение всех кнопок проверки на странице
-
-//     // Нахождение всех необходимых элементов на странице
-
-//     module.findAllElements = function() {
-
-//       module.findContainers();
-//       module.findInputs();
-//       module.findWarnBlocks();
-//       module.findSubmitBtns();
-//       helpFuncs.clear.applyClear();
-
-//     };
-
-//     // End Нахождение всех необходимых элементов на странице
-
-//     // Валидация формы
-
-//     module.validate = function(formName, mode) {
-
-//       if ((formName && typeof formName === "string") && (mode == "validate" || mode == "valid" || mode == "data")) {
-
-//         let containers = moduleInfo.containers;
-
-//         for (let i in containers) {
-
-//           let containerInfo = containers[i];
-//           let currentFormName = containerInfo.element.getAttribute(dataAttr.name.form);
-//           let clearForm = containerInfo.element.getAttribute(dataAttr.clearForm);
-
-//           if (currentFormName == formName) {
-
-//             let formParams = {
-//               errors: [],
-//               valid: false,
-//               data: {
-//                 name: formName,
-//                 inputs: {}
-//               }
-//             }
-
-//             for (let input of containerInfo.inputs) {
-
-//               helpFuncs.validateInput({
-//                 input: input,
-//                 form: {
-//                   name: formName,
-//                   info: containerInfo
-//                 },
-//                 formParams: formParams,
-//                 mode: mode
-//               });
-
-//             }
-
-//             if (formParams.errors.length == 0) {
-
-//               formParams.valid = true;
-
-//               if (options.ajax == false && mode == "validate") {
-
-//                 setTimeout(function() {
-
-//                   location.reload();
-
-//                 }, options.timeouts.send);
-
-//               } else if (options.ajax == true) {
-
-//                 module.applySuccessValidation({
-//                   valid: formParams.valid,
-//                   form: formParams.data
-//                 });
-
-//                 if (clearForm != "false") {
-
-//                   setTimeout(function() {
-
-//                     helpFuncs.clear.clearForm({
-//                       name: formName,
-//                       info: containerInfo
-//                     });
-
-//                   }, options.timeouts.clear);
-
-//                 }
-
-//               }
-
-//             } else {
-
-//               module.applyErrorValidation({
-//                 valid: formParams.valid,
-//                 form: formParams.data
-//               });
-
-//             }
-
-//             if (mode == "valid") {
-
-//               return formParams.valid;
-
-//             } else if (mode == "data") {
-
-//               return formParams.data.inputs;
-
-//             }
-
-//           }
-
-//         }
-
-//       }
-
-//     };
-
-//     // End Валидация формы
-
-//     module.setParams();
-//     module.findAllElements();
-
-//     if (elemsClasses.submitBtn && options.dynamic == true) {
-
-//       document.addEventListener("click", function(e) {
-
-//         let elem = e.target;
-
-//         if (elem.classList.contains(elemsClasses.submitBtn)) {
-
-//           e.preventDefault();
-
-//           let btn = this;
-//           let formName = btn.getAttribute(dataAttr.name.form);
-
-//           if (formName) {
-
-//             module.validate(formName, "validate");
-
-//           }
-
-//         }
-
-//       });
-
-//     } else if (elems.btns && options.dynamic == false) {
-
-//       for (let btn of elems.btns) {
-
-//         btn.addEventListener("click", function(e) {
-
-//           e.preventDefault();
-
-//           let formName = btn.getAttribute(dataAttr.name.form);
-
-//           if (formName) {
-
-//             module.validate(formName, "validate");
-
-//           }
-
-//         });
-
-//       }
-
-//     }
-
-//     helpFuncs.clear.applyClear();
-
-//   } else {
-
-//     console.error();
-//     return false;
-
-//   }
-
-// };
+};
