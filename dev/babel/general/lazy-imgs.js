@@ -1,4 +1,4 @@
-// LazyImgs - ver 1.0.1
+// LazyImgs - ver 1.1.1
 
 import {findElemsClass} from "./find";
 import {loader} from "./loader";
@@ -87,6 +87,7 @@ export let LazyImgs = class {
 
       this.__createPreloader();
       this.__getInfoImgs();
+      this.__scroll();
       windowScroll($helpFuncs.scroll);
 
     }
@@ -108,7 +109,7 @@ export let LazyImgs = class {
 
   __createPreloader() {
 
-    let $preloader = this.info.params.preloader;
+    let $preloader = this.info.options.preloader;
 
     if ($preloader.active) {
 
@@ -180,7 +181,7 @@ export let LazyImgs = class {
 
         if (options.styleImg) {
 
-          img.tag = "div";
+          img.tag = "span";
           img.type = "style";
 
         } else if (options.img) {
@@ -260,7 +261,7 @@ export let LazyImgs = class {
         $imgInfo.params.top = $imgInfo.block.getBoundingClientRect().top;
         $imgInfo.params.height = $imgInfo.block.offsetHeight;
 
-        if (!$params.load && ($imgInfo.params.top - $params.windowHeight - $options.indent <= 0) && ($imgInfo.params.top + $imgInfo.params.height + $options.indent >= 0)) {
+        if (!$imgInfo.params.load && ($imgInfo.params.top - $params.windowHeight - $options.indent <= 0) && ($imgInfo.params.top + $imgInfo.params.height + $options.indent >= 0)) {
 
           this.__loadImg($imgInfo);
 
@@ -291,7 +292,7 @@ export let LazyImgs = class {
 
           if (img.type == "style") {
 
-            img.el.style.backgroundImage = "url(" + url + ");";
+            img.el.style.backgroundImage = "url(" + url + ")";
 
           } else if (img.type == "img") {
 
