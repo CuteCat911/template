@@ -1,4 +1,4 @@
-// SlideSidebar - ver 1.0.1
+// SlideSidebar - ver 1.0.2
 
 import {findFirstClass, findElemsClass} from "./find";
 import {getWindowScroll, windowScroll} from "./window-scroll";
@@ -172,7 +172,7 @@ export let SlideSidebar = class {
     let $params = this.info.params;
     let $sidebarsInfo = this.info.sidebarsInfo;
     let $fixedTop = this.styles.fixed.top;
-    let $fixedBottom = this.style.fixed.bottom;
+    let $fixedBottom = this.styles.fixed.bottom;
     let $static = this.styles.static;
 
     if ($params.minWidth && $params.windowWidth >= $params.minWidth || !$params.minWidth) {
