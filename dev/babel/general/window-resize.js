@@ -1,4 +1,4 @@
-// windowResize - ver. 1.1.0
+// windowResize - ver. 1.1.1
 
 import {debounce} from "./debounce";
 import {inspectMobile} from "./inspect-mobile";
@@ -44,7 +44,7 @@ window.addEventListener("resize", function() {
 
 	if (inspectMobile()) {
 
-		if (Math.abs(windowHeight - $windowHeight) > 60) {
+		if (Math.abs(windowHeight - $windowHeight) > 60 || windowHeight == $windowHeight) {
 
 			debounce(applyFunc, 150);
 			windowHeight = $windowHeight;
