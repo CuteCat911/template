@@ -1,4 +1,4 @@
-// SlideSidebar - ver 1.0.0
+// SlideSidebar - ver 1.0.1
 
 import {findFirstClass, findElemsClass} from "./find";
 import {getWindowScroll, windowScroll} from "./window-scroll";
@@ -144,17 +144,17 @@ export let SlideSidebar = class {
 
       if (sidebar) {
 
-        for (let i in $params.indent) {
+        for (let j in $params.indent) {
 
-          let size = sidebar.getAttribute($dataAttrs.indent[i]);
+          let size = sidebar.getAttribute($dataAttrs.indent[j]);
 
-          if (+size <= 0 || +size >= 0) {
+          if (size && (+size <= 0 || +size >= 0)) {
 
-            $sidebarsInfo[i].params.indent[i] = +size;
+            $sidebarsInfo[i].params.indent[j] = +size;
 
           } else {
 
-            $sidebarsInfo[i].params.indent[i] = $params.indent[i];
+            $sidebarsInfo[i].params.indent[j] = $params.indent[j];
 
           }
 
@@ -171,7 +171,9 @@ export let SlideSidebar = class {
     let $elems = this.info.elems;
     let $params = this.info.params;
     let $sidebarsInfo = this.info.sidebarsInfo;
-    let $styles = this.styles;
+    let $fixedTop = this.styles.fixed.top;
+    let $fixedBottom = this.style.fixed.bottom;
+    let $static = this.styles.static;
 
     if ($params.minWidth && $params.windowWidth >= $params.minWidth || !$params.minWidth) {
 
@@ -201,10 +203,10 @@ export let SlideSidebar = class {
 
         if (height < contentHeight || $params.windowWidth > $params.minWidth) {
 
-          $styles.fixed.top.top = params.indent.top + "px";
-          $styles.fixed.top.width = width + "px";
-          $styles.fixed.bottom.bottom = params.indent.bottom = "px";
-          $styles.fixed.bottom.width = width + "px";
+          $fixedTop.top = params.indent.top + "px";
+          $fixedTop.width = width + "px";
+          $fixedBottom.bottom = params.indent.bottom + "px";
+          $fixedBottom.width = width + "px";
 
           if (scroll > params.lastScroll) {
 
@@ -212,14 +214,14 @@ export let SlideSidebar = class {
 
               if (scroll >= startLine - top) {
 
-                applyStyle(sidebar, $styles.fixed.top, "add");
+                applyStyle(sidebar, $fixedTop, "add");
 
               }
 
               if (scroll + windowHeight >= startLine + contentHeight - top + (windowHeight - height)) {
 
-                $styles.static.marginTop = contentHeight - height + "px";
-                applyStyle(sidebar, $styles.static, "add");
+                $static.marginTop = contentHeight - height + "px";
+                applyStyle(sidebar, $static, "add");
 
               }
 
@@ -228,31 +230,31 @@ export let SlideSidebar = class {
               if (scroll >= startLine + height + bottom - windowHeight && marginTop == 0) {
 
                 params.position.bottom = "active";
-                applyStyle(sidebar, $styles.fixed.bottom, "add");
+                applyStyle(sidebar, $fixedBottom, "add");
 
               }
 
               if (scroll + windowHeight >= startLine + contentHeight + bottom && marginTop == 0) {
 
                 params.position.bottom = null;
-                $styles.static.marginTop = contentHeight - height + "px";
-                applyStyle(sidebar, $styles.static, "add");
+                $static.marginTop = contentHeight - height + "px";
+                applyStyle(sidebar, $static, "add");
 
               }
 
               if (scroll >= offset - top && params.position.top == "active") {
 
                 params.position.top == null;
-                $styles.static.marginTop = offset - startLine + "px";
-                applyStyle(sidebar, $styles.static, "add");
+                $static.marginTop = offset - startLine + "px";
+                applyStyle(sidebar, $static, "add");
 
               }
 
               if (scroll >= offset + height + bottom - windowHeight && scroll + windowHeight < startLine + contentHeight && marginTop >= 1) {
 
                 params.position.bottom = "active";
-                $styles.fixed.bottom.marginTop = "";
-                applyStyle(sidebar, $styles.fixed.bottom, "add");
+                $fixedBottom.marginTop = "";
+                applyStyle(sidebar, $fixedBottom, "add");
 
               }
 
@@ -264,14 +266,14 @@ export let SlideSidebar = class {
 
               if (scroll <= startLine - top) {
 
-                $styles.static.marginTop = "";
-                applyStyle(sidebar, $styles.static, "add");
+                $static.marginTop = "";
+                applyStyle(sidebar, $static, "add");
 
               }
 
               if (scroll + windowHeight <= startLine + contentHeight - top + (windowHeight - height) && scroll > startLine - top) {
 
-                applyStyle(sidebar, $styles.fixed.top, "add");
+                applyStyle(sidebar, $fixedTop, "add");
 
               }
 
@@ -280,23 +282,23 @@ export let SlideSidebar = class {
               if (scroll + top <= offset) {
 
                 params.position.top = "active";
-                applyStyle(sidebar, $styles.fixed.top, "add");
+                applyStyle(sidebar, $fixedTop, "add");
 
               }
 
               if (scroll + top <= startLine) {
 
                 params.position.top = null;
-                $styles.static.marginTop = "";
-                applyStyle(sidebar, $styles.static, "add");
+                $static.marginTop = "";
+                applyStyle(sidebar, $static, "add");
 
               }
 
               if (params.position.bottom == "active") {
 
                 params.position.bottom = null;
-                $styles.static.marginTop = offset - startLine + "px";
-                applyStyle(sidebar, $styles.static, "add");
+                $static.marginTop = offset - startLine + "px";
+                applyStyle(sidebar, $static, "add");
 
               }
 
