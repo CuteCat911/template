@@ -1,4 +1,4 @@
-// ToTop - ver. 1.0.0
+// ToTop - ver. 1.0.1
 
 import {findElemsClass} from "./find";
 import {scrollTo} from "./scroll-to";
@@ -30,7 +30,7 @@ export let ToTop = class {
       this.helpFuncs = {
         scroll() {
 
-          windowScroll($module.__hide);
+          $module.__hide();
 
         }
       };
@@ -42,7 +42,9 @@ export let ToTop = class {
 
         for (let $elem of $info.topElems.elems) {
 
-          $elem.addEventListener("click", $module.__toTop);
+          $elem.addEventListener("click", function() {
+            $module.__toTop();
+          });
 
         }
 
@@ -75,7 +77,7 @@ export let ToTop = class {
 
       }
 
-      $helpFuncs.scroll();
+      windowScroll($helpFuncs.scroll);
 
     }
 
@@ -108,7 +110,7 @@ export let ToTop = class {
   __hide() {
 
     let $elems = this.info.topElems.elems;
-    let $hide = this.hide;
+    let $hide = this.info.hide;
 
     if ($hide.active && $elems) {
 
