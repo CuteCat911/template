@@ -1,4 +1,4 @@
-// scrollTo - ver 1.0.0
+// scrollTo - ver 1.0.1
 
 import {getWindowScroll, getDocumentHeight} from "./window-scroll";
 
@@ -18,7 +18,7 @@ export let scrollTo = function(params) {
         windowHeight: window.innerHeight
       }
     };
-    let params = info.params;
+    let $params = info.params;
     let calibration = function() {
 
       if (info.calibration) {
@@ -36,14 +36,14 @@ export let scrollTo = function(params) {
     };
     let scrollToPosition = function() {
 
-      if (params.mode && typeof params.mode === "string") {
+      if ($params.mode && typeof $params.mode === "string") {
 
         setTimeout(function() {
 
           let idScroll = requestAnimationFrame(scrollToPosition);
           let scroll = getWindowScroll();
 
-          if (params.mode == "top") {
+          if ($params.mode == "top") {
 
             window.scrollTo(0, scroll - 50 * info.speed);
 
@@ -54,11 +54,11 @@ export let scrollTo = function(params) {
 
             }
 
-          } else if (params.mode == "bottom") {
+          } else if ($params.mode == "bottom") {
 
             window.scrollTo(0, scroll + 50 * info.speed);
 
-            if (scroll >= info.position || scroll >= params.documentHeight - params.windowHeight) {
+            if (scroll >= info.position || scroll >= $params.documentHeight - $params.windowHeight) {
 
               window.cancelAnimationFrame(idScroll);
               calibration();
