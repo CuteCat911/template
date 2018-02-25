@@ -1,4 +1,4 @@
-// Validation - ver. 1.0.0
+// Validation - ver. 1.1.0
 
 import {findFirstClass, findElemsClass} from "./find";
 import {applyClasses} from "./apply-classes";
@@ -23,9 +23,9 @@ export let Validation = class {
         },
         elems: {
           containers: (findElemsClass(params.container, document)) ? findElemsClass(params.container) : null,
-          inputs: (findAllElements(params.inputs, document)) ? findAllElements(params.inputs, document) : null,
+          inputs: (findElemsClass(params.inputs, document)) ? findElemsClass(params.inputs, document) : null,
           btns: null
-        }
+        },
         containers: {},
         options: {
           dynamic: (params.dynamic && typeof params.dynamic === "boolean") ? params.dynamic : false,
@@ -212,13 +212,48 @@ export let Validation = class {
 
           if (type && typeof type === "string") {
 
-            for (let i in $module.info.containers) {
+            let $info = $module.info;
+
+            for (let i in $info.containers) {
 
               if ($info.containers[i] && typeof $info.containers[i] === "object") {
 
-                info[type] = (findElemsClass($elemsClasses[type], document)) ? findElemsClass($elemsClasses[type], document) : null;
+                $info.containers[i][type] = (findElemsClass($info.elemsClasses[type], document)) ? findElemsClass($info.elemsClasses[type], document) : null;
 
               }
+
+            }
+
+          }
+
+        },
+        submit(btn, e) {
+
+          if ((btn && typeof btn === "object") && e && typeof e === "object") {
+
+            e.preventDefault();
+
+            let formName = btn.getAttribute($module.dataAttrs.name.form);
+
+            if (formName) {
+
+              $module.validate(formName, "validate");
+
+            }
+
+          }
+
+        },
+        focusClear(input) {
+
+          if (input && typeof input === "object") {
+
+            let form = findCurrentParent(input, $module.info.elemsClasses.containers);
+            let formName = form.getAttribute($module.dataAttrs.name.form);
+
+            if (formName) {
+
+              $module.__clearInput(input, formName, "single");
 
             }
 
@@ -231,6 +266,7 @@ export let Validation = class {
       let $elemsClasses = this.info.elemsClasses;
       let $options = this.info.options;
       let $dataAttrs = this.dataAttrs;
+      let $helpFuncs = this.helpFuncs;
 
       this.__setClasses(params);
       this.findElems("all");
@@ -243,16 +279,7 @@ export let Validation = class {
 
           if (elem.classList.contains($elemsClasses.submitBtns)) {
 
-            e.preventDefault();
-
-            let btn = this;
-            let formName = btn.getAttribute($dataAttrs.name.form);
-
-            if (formName) {
-
-              $module.validate(formName, "validate");
-
-            }
+            $helpFuncs.submit(this, e);
 
           }
 
@@ -262,19 +289,39 @@ export let Validation = class {
 
         for (let $btn of $elems.btns) {
 
-          $btn.addEventListener("click", function(e)) {
+          $btn.addEventListener("click", function(e) {
 
-            e.preventDefault();
+            $helpFuncs.submit($btn, e);
 
-            let formName = $btn.getAttribute($dataAttrs.name.form);
+          });
 
-            if (formName) {
+        }
 
-              $module.validate(formName, "validate");
+      }
 
-            }
+      if ($elemsClasses.inputs && $options.dynamic) {
+
+        document.addEventListener("focus", function(e) {
+
+          let elem = e.target;
+
+          if (elem.classList.contains($elemsClasses.inputs)) {
+
+            $helpFuncs.focusClear(this);
 
           }
+
+        });
+
+      } else if ($elems.inputs) {
+
+        for (let $input of $elems.inputs) {
+
+          $input.addEventListener("focus", function() {
+
+            $helpFuncs.focusClear($input);
+
+          });
 
         }
 
@@ -292,10 +339,10 @@ export let Validation = class {
 
       $classes.success = (params.defaultSuccessClass == true) ? successClass : null;
       $classes.error = (params.defaultErrorClass == true) ? errorClass : null;
-      $classes.success = (params.defaultClasses == true) ? successClass : null;
-      $classes.error = (params.defaultClasses == true) ? errorClass : null;
-      $classes.success = (params.successClass && typeof params.successClass === "string") ? params.successClass : null;
-      $classes.error = (params.errorClass && typeof params.errorClass === "string") ? params.errorClass : null;
+      $classes.success = (params.defaultClasses == true) ? successClass : $classes.success;
+      $classes.error = (params.defaultClasses == true) ? errorClass : $classes.error;
+      $classes.success = (params.successClass && typeof params.successClass === "string") ? params.successClass : $classes.success;
+      $classes.error = (params.errorClass && typeof params.errorClass === "string") ? params.errorClass : $classes.error;
 
     }
 
@@ -314,11 +361,11 @@ export let Validation = class {
 
         $elems.containers = findElemsClass($elemsClasses.containers, document);
 
-        if (containers) {
+        if ($elems.containers) {
 
-          for (let i in containers) {
+          for (let i in $elems.containers) {
 
-            let container = containers[i];
+            let container = $elems.containers[i];
 
             if (typeof container === "object") {
 
@@ -360,7 +407,7 @@ export let Validation = class {
         this.findElems("containers");
         this.findElems("inputs");
         this.findElems("warnBlocks");
-        this.findElem("submitBtns");
+        this.findElems("submitBtns");
 
       }
 
@@ -441,6 +488,7 @@ export let Validation = class {
 
     if ((input && typeof input === "object") && (inputInfo && typeof inputInfo === "object") && (errors && typeof errors === "object") && (mode && typeof mode === "string")) {
 
+      let $module = this;
       let $dataAttrs = this.dataAttrs;
       let $helpFuncs = this.helpFuncs;
       let successText = inputInfo.params.text.success;
@@ -486,7 +534,7 @@ export let Validation = class {
 
             }
 
-            this.__addErrorSuccess($params);
+            $module.__addErrorSuccess($params);
 
           }
 
@@ -776,7 +824,11 @@ export let Validation = class {
 
                 for (let i in input.files) {
 
-                  inputInfo.value[i] = (typeof input.files[i] === "object") ? input.files[i];
+                  if (typeof input.files[i] === "object") {
+
+                    inputInfo.value[i] = input.files[i];
+
+                  }
 
                 }
 
@@ -1065,6 +1117,7 @@ export let Validation = class {
 
     if ((input && typeof input === "object") && (elem && typeof elem === "object") && (inputInfo && typeof inputInfo === "object") && (typeText && typeof typeText === "string")) {
 
+      let $module = this;
       let $elemsClasses = this.info.elemsClasses;
       let applyWriteText = function(place) {
 
@@ -1090,7 +1143,7 @@ export let Validation = class {
 
           }
 
-          this.__writeText(params);
+          $module.__writeText(params);
 
         }
 
@@ -1144,15 +1197,16 @@ export let Validation = class {
 
     if ((input && typeof input === "object") && (inputInfo && typeof inputInfo === "object")) {
 
+      let $module = this;
       let currentElem = input;
-      let $classes = this.info.params.classes;
+      let $classes = this.info.options.classes;
       let $dataAttrs = this.$dataAttrs;
       let $styles = this.styles;
       let applySetText = function(typeText) {
 
         if (typeText && typeof typeText === "string") {
 
-          this.__setText({
+          $module.__setText({
             input: input,
             currentElem: currentElem,
             inputInfo: inputInfo,
@@ -1343,6 +1397,7 @@ export let Validation = class {
 
             if (!value || (value && (value == successText || value == errorText || value == errorRegText || value == errorMinText || value == errorMaxText))) {
 
+
               inputInfo.clear = "clear";
 
             } else if (value) {
@@ -1376,7 +1431,7 @@ export let Validation = class {
         input: input,
         inputInfo: inputInfo,
         formName: formName,
-        option: "text"
+        param: "text"
       });
 
       switch (inputInfo.tag) {
