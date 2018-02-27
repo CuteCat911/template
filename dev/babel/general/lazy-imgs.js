@@ -1,4 +1,4 @@
-// LazyImgs - ver 1.1.1
+// LazyImgs - ver 1.1.2
 
 import {findElemsClass} from "./find";
 import {loader} from "./loader";
@@ -115,10 +115,18 @@ export let LazyImgs = class {
 
       if ($preloader.type != "element") {
 
-        $preloader.el = loader.create("local", {
-          blockClasses: [$preloader.classes.block],
-          indicatorClasses: [$preloader.classes.indicator]
-        });
+        let params = {};
+
+        if ($preloader.type == "custom") {
+
+          params = {
+            blockClasses: [$preloader.classes.block],
+            indicatorClasses: [$preloader.classes.indicator]
+          };
+
+        };
+
+        $preloader.el = loader.create("local", params);
 
       }
 
@@ -132,7 +140,7 @@ export let LazyImgs = class {
 
     if ((img && typeof img === "object") && $preloader.active) {
 
-      img.appendChild($preloader.el);
+      img.appendChild($preloader.el.cloneNode(true));
 
     }
 
