@@ -1,5 +1,7 @@
 /* global ActiveXObject */
 
+// Ajax ver. 1.0.1
+
 // getXmlHttp - ver. 1.0.0
 
 export let getXmlHttp = function() {
@@ -34,7 +36,7 @@ export let getXmlHttp = function() {
 
 };
 
-// serialize - ver. 1.0.0
+// serialize - ver. 1.0.1
 
 export let serialize = function(type, data) {
 
@@ -45,9 +47,13 @@ export let serialize = function(type, data) {
 
     for (let key in data) {
 
-      let str = key + "=" + encodeURIComponent(data[key]);
+      if (data[key] && data[key].length) {
 
-      serializeArray.push(str);
+        let str = key + "=" + encodeURIComponent(data[key]);
+
+        serializeArray.push(str);
+
+      }
 
     }
 
