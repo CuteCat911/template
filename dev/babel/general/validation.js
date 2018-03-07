@@ -1,4 +1,4 @@
-// Validation - ver. 1.1.0
+// Validation - ver. 1.1.1
 
 import {findFirstClass, findElemsClass} from "./find";
 import {applyClasses} from "./apply-classes";
@@ -39,7 +39,11 @@ export let Validation = class {
             clear: (params.clearTimeout >= 0) ? params.clearTimeout : 200
           }
         },
-        rules: (params.rules && typeof params.rules === "object") ? params.rules : null
+        rules: (params.rules && typeof params.rules === "object") ? params.rules : null,
+        funcs: {
+          success: [],
+          error: []
+        }
       };
       this.dataAttrs = {
         noValidate: "data-no-valid",
@@ -548,6 +552,16 @@ export let Validation = class {
         let min;
         let successSituation = function() {
 
+          if (input.checked || !input.hasAttribute($dataAttrs.noValidate)) {
+
+            applyErrorSuccess({error: true});
+
+          } else {
+
+            applyErrorSuccess();
+
+          }
+
         };
 
         if (inputInfo.type == "checkbox") {
@@ -894,6 +908,7 @@ export let Validation = class {
 
     if ((formName && typeof formName === "string") && (mode == "validate" || mode == "valid" || mode == "data")) {
 
+      let $module = this;
       let $containers = this.info.containers;
       let $options = this.info.options;
       let $dataAttrs = this.dataAttrs;
@@ -943,11 +958,13 @@ export let Validation = class {
 
             } else if ($options.ajax) {
 
+              this.__applyFuncs(params, "success");
+
               if (clearForm != "false") {
 
                 setTimeout(function() {
 
-                  this.clearForm({
+                  $module.clearForm({
                     name: formName,
                     info: $info
                   });
@@ -960,7 +977,7 @@ export let Validation = class {
 
           } else {
 
-
+            this.__applyFuncs(params, "error");
 
           }
 
@@ -1454,6 +1471,113 @@ export let Validation = class {
         inputInfo: inputInfo,
         warnBlocks: $helpFuncs.get.warnBlocks(formName)
       });
+
+    }
+
+  }
+
+  addFuncs(funcs, event, formsName) {
+
+    if (funcs && (event && typeof event === "string")) {
+
+      let $funcs = this.info.funcs;
+      let formsNameArray = [];
+      let addFormsName = function() {
+
+        if (typeof formsName === "string") {
+
+          formsNameArray.push(formsName);
+
+        } else if (Array.isArray(formsName)) {
+
+          for (let formName of formsName) {
+
+            if (typeof formName === "string") {
+
+              formsNameArray.push(formName);
+
+            }
+
+          }
+
+        }
+
+      };
+
+      if (typeof funcs === "function") {
+
+        if (formsName) {
+
+          addFormsName();
+          $funcs[event].push([funcs, formsNameArray]);
+
+        } else {
+
+          $funcs[event].push(funcs);
+
+        }
+
+      } else if (Array.isArray(funcs)) {
+
+        for (let func of funcs) {
+
+          if (typeof func === "string") {
+
+            if (formsName) {
+
+              addFormsName();
+              $funcs[event].push([func, formsNameArray]);
+
+            } else {
+
+              $funcs[event].push(func);
+
+            }
+
+          }
+
+        }
+
+      }
+
+    }
+
+  }
+
+  __applyFuncs(info, event) {
+
+    if ((info && typeof info === "object") && (event && typeof event === "string")) {
+
+      let $funcs = this.info.funcs;
+      let formsName = info.data.name;
+
+      if ($funcs[event] && $funcs[event].length != 0) {
+
+        for (let item of $funcs[event]) {
+
+          if (item.length == 2) {
+
+            for (let popup of item[1]) {
+
+              if (popup == formsName) {
+
+                let func = item[0];
+
+                func(info.data);
+
+              }
+
+            }
+
+          } else {
+
+            item(info.data);
+
+          }
+
+        }
+
+      }
 
     }
 
