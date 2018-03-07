@@ -1,4 +1,4 @@
-// Popups - ver. 1.0.0
+// Popups - ver. 1.0.1
 
 import {findFirstTag, findElemsClass, findElemsClasses} from "./find";
 import {findCurrentParent} from "./find-current-parent";
@@ -1008,7 +1008,7 @@ export let Popups = class {
       let popupsNameArray = [];
       let addPopupsName = function() {
 
-        if (popupsName === "string") {
+        if (typeof popupsName === "string") {
 
           popupsNameArray.push(popupsName);
 
