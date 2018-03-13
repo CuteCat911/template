@@ -1,4 +1,4 @@
-// Selects - ver. 1.0.0
+// Selects - ver. 1.0.1
 
 import {findFirstClass, findElemsClass, findElemsTag} from "./find";
 import {findCurrentParent} from "./find-current-parent";
@@ -72,12 +72,16 @@ export let Selects = class {
 
               for (let $select of $selects) {
 
-                let $listWrapper = findFirstClass($classes.listWrapper, $select);
+                if ($select.classList.contains(stateClasses.open)) {
 
-                $module.__applyFuncs("beforeClose", $select);
-                $select.classList.remove(stateClasses.open);
-                $listWrapper.style.height = "";
-                $module.__applyFuncs("afterClose", $select);
+                  let $listWrapper = findFirstClass($classes.listWrapper, $select);
+
+                  $module.__applyFuncs("beforeClose", $select);
+                  $select.classList.remove(stateClasses.open);
+                  $listWrapper.style.height = "";
+                  $module.__applyFuncs("afterClose", $select);
+
+                }
 
               }
 
