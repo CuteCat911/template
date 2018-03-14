@@ -69,6 +69,35 @@ const webpackOptions = {
     })
   ]
 };
+const minifyWebpackOptions = {
+  output: {
+    publicPath: "/js",
+    library: "[name]"
+  },
+  module: {
+    loaders: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        loader: 'babel-loader',
+        query: {
+          presets: ['es2015']
+        }
+      }
+    ]
+  },
+  plugins: [
+    new webpack.NoErrorsPlugin(),
+    new webpack.DefinePlugin({
+      NODE_ENV: JSON.stringify(NODE_ENV)
+    }),
+    new webpack.optimize.CommonsChunkPlugin({
+      name: "common",
+      minChunks: 4
+    }),
+    new conf.js.uglifyWebpack()
+  ]
+};
 const funcs = {
   reloadStream: function(params) {
     if (params && typeof params === "object") {
@@ -81,6 +110,8 @@ const funcs = {
         if (tasks[i] && typeof tasks[i] === "function") {
           if (i == "normal") {
             gulp.task(i, ["localhost", "pages", "stylus", "cssLibs", "scripts", "scriptsLibs", "svg", "img"], tasks[i]);
+          } else if (i == "build") {
+            gulp.task(i, ["cssMinify", "scriptsMinify"], tasks[i]);
           } else if (i == "without") {
             gulp.task(i, ["localhost", "pages", "stylus", "cssLibs", "svg", "img"], tasks[i]);
           } else if (i == "only") {
@@ -135,6 +166,11 @@ const tasks = {
                   config: ".stylintrc"
                 }))
                 .pipe(conf.css.lint.reporter());
+    },
+    cssMinify: function() {
+      return gulp.src("css/*.css")
+                .pipe(conf.css.cssNano())
+                .pipe(gulp.dest("css"));
     }
   },
   html: {
@@ -198,6 +234,20 @@ const tasks = {
                 }))
                 .pipe(conf.js.linter.format())
                 .pipe(conf.js.linter.failAfterError());
+    },
+    scriptsMinify: function() {
+      let firstBuildReady = false;
+      let done = function(err, stats) {
+        firstBuildReady = true;
+        if (err) {
+          return false;
+        }
+      };
+      return gulp.src("dev/babel/*.js")
+                .on("error", conf.default.notify.onError())
+                .pipe(conf.js.named())
+                .pipe(conf.js.webpackStream(minifyWebpackOptions))
+                .pipe(gulp.dest("js/"));
     }
   },
   sprites: {
@@ -274,7 +324,8 @@ const tasks = {
   ":withoutJs": function() {},
   ":onlyJs": function() {},
   ":onlyJsDebug": function() {},
-  default: function() {}
+  default: function() {},
+  build: function() {}
 };
 
 tasks[":js--n"] = tasks[":withoutJs"];
