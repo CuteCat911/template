@@ -1,0 +1,14 @@
+doctype
+html(lang="ru")
+  include ../general/head
+  body
+    .page-wrapper
+      .page-content
+        block noJs
+        block header
+          include ../general/header
+        main
+          block content
+      block footer
+        include ../general/footer
+    include ../general/scripts
