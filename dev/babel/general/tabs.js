@@ -1,4 +1,4 @@
-// Tabs - ver. 1.0.0 alpha
+// Tabs - ver. 1.0.1
 
 import {findElemsClass} from "./find";
 import {activeClass, openClass} from "./state-classes";
@@ -12,8 +12,6 @@ export let Tabs = class {
     if ((params.container && typeof params.container === "string") && (params.tab && typeof params.tab === "string") && (params.content && typeof params.content)) {
 
       let $module = this;
-
-      console.log(1);
 
       this.info = {
         classes: {
