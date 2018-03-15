@@ -1,6 +1,6 @@
-colWidth(c, max, left = 0, right = 0)
-	left = remSize(left)
-	right = remSize(right)
-	width = c * (100% / max)
-	width s("calc(%s - (%s + %s))", width, left, right)
+colWidth($c, $max, $left = 0, $right = 0)
+	$left = remSize($left)
+	$right = remSize($right)
+	$width = $c * (100% / $max)
+	width s("calc(%s - (%s + %s))", $width, $left, $right)
 	box-sizing border-box

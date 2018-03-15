@@ -1,5 +1,5 @@
-remSize(size)
-  if (size <= 6px && size >= -6px) || (size <= 6 && size >= -6)
-    unit(size, px)
+remSize($size)
+  if ($size <= 6px && $size >= -6px) || ($size <= 6 && $size >= -6)
+    unit($size, px)
   else
-    unit((size / fz-mid), rem)
+    unit(($size / $fz-mid), rem)

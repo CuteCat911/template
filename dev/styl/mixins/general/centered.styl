@@ -1,58 +1,58 @@
-centered(position = "center")
+centered($position = "center")
   position absolute
 
-  if position == "top-left"
+  if $position == "top-left"
     top 0
     left 0
 
-  if position == "top-center"
+  if $position == "top-center"
     top 0
     left 50%
     transform translateX(-50%)
 
-  if position == "top-right"
+  if $position == "top-right"
     top 0
     right 0
 
-  if position == "left"
+  if $position == "left"
     top 50%
     left 0
     transform translateY(-50%)
 
-  if position == "center"
+  if $position == "center"
     top 50%
     left 50%
     transform translate(-50%, -50%)
 
-  if position == "right"
+  if $position == "right"
     top 50%
     right 0
     transform translateY(-50%)
 
-  if position == "wrong-left"
+  if $position == "wrong-left"
     top 45%
     left 0
     transform translateY(-50%)
 
-  if position == "wrong-center"
+  if $position == "wrong-center"
     top 45%
     left 50%
     transform translate(-50%, -50%)
 
-  if position == "wrong-right"
+  if $position == "wrong-right"
     top 45%
     right 0
     transform translateY(-50%)
 
-  if position == "bottom-left"
+  if $position == "bottom-left"
     left 0
     bottom 0
 
-  if position == "bottom-center"
+  if $position == "bottom-center"
     left 50%
     bottom 0
     transform translateX(-50%)
 
-  if position == "bottom-right"
+  if $position == "bottom-right"
     right 0
     bottom 0
